@@ -1,0 +1,6 @@
+kivy
+matplotlib
+pandas
+numpy
+pyvista
+os

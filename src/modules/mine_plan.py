@@ -1,10 +1,17 @@
 import pandas as pd
 import pyvista as pv
 import numpy as np
+import os
 
 # Nombre del archivo de texto
-scenario01 = '../data/Scenarios/Scenario03.txt'
-mine_plan_file = '../data/MinePlan/MinePlan.txt'
+scenario01 = './data/Scenarios/Scenario03.txt'
+mine_plan_file = './data/MinePlan/MinePlan.txt'
+
+# Verificar si los archivos existen en las rutas especificadas
+if not os.path.exists(scenario01):
+    raise FileNotFoundError(f"El archivo {scenario01} no existe.")
+if not os.path.exists(mine_plan_file):
+    raise FileNotFoundError(f"El archivo {mine_plan_file} no existe.")
 
 # Especificar los nombres de las columnas
 columns = ['X', 'Y', 'Z', 'Tonelaje total del bloque', 'metal 1', 'metal 2']
