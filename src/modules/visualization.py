@@ -54,3 +54,8 @@ def visualize_scenario(data, mine_plan, period_limit):
     print(f"Valores únicos de Z: {z.unique()}")
 
     return plotter
+
+def load_and_visualize_scenario(scenario_file, period_limit):
+    scenario_data = load_scenario(scenario_file)
+    mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
+    visualize_scenario(scenario_data, mine_plan, period_limit)
