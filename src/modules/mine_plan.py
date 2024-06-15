@@ -5,6 +5,7 @@ import numpy as np
 def load_scenario(file_path):
     columns = ['X', 'Y', 'Z', 'Tonelaje total del bloque', 'metal 1', 'metal 2']
     data = pd.read_csv(file_path, header=None, names=columns)
+    data['Z'] = -data['Z']  # Invertir el eje Z al leer los datos
     return data
 
 def visualize_scenario(data, mine_plan, period_limit):
@@ -25,6 +26,8 @@ def visualize_scenario(data, mine_plan, period_limit):
 
     cube = pv.Cube()
     glyphs = points.glyph(scale=False, geom=cube, orient=False)
+
+    mine_plan['ZIndex'] = -mine_plan['ZIndex']  # Invertir el eje Z en el plan minero
 
     filtered_mine_plan = mine_plan[mine_plan['Period'] <= period_limit]
     mask = np.ones(len(points.points), dtype=bool)

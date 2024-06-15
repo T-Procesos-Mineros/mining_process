@@ -43,7 +43,7 @@ def display_scenario(*args):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     scenario_index = int(button_id.split('-')[-1])
-    scenario_file = f'src/data/Scenarios/Scenario{str(scenario_index).zfill(2)}.txt'
+    scenario_file = f'data/Scenarios/Scenario{str(scenario_index).zfill(2)}.txt'
 
     return html.Div([
         html.H2(f"Visualizando Escenario {scenario_index}", className="text-2xl font-bold mb-4"),

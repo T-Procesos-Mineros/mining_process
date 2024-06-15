@@ -5,6 +5,8 @@ import numpy as np
 def load_scenario(file_path):
     columns = ['X', 'Y', 'Z', 'Tonelaje total del bloque', 'metal 1', 'metal 2']
     data = pd.read_csv(file_path, header=None, names=columns)
+    data['Z'] = -data['Z']  # Hacer que el valor de Z sea negativo al leer los datos
+    data['Ley'] = data['metal 1'] / data['Tonelaje total del bloque']  # Calcular la ley del mineral
     return data
 
 def visualize_scenario(data, mine_plan, period_limit):
@@ -14,17 +16,21 @@ def visualize_scenario(data, mine_plan, period_limit):
     tonelaje = data['Tonelaje total del bloque'].astype(float)
     metal_1 = data['metal 1'].astype(float)
     metal_2 = data['metal 2'].astype(float)
+    ley = data['Ley'].astype(float)
 
     points = pv.PolyData(np.column_stack((x, y, z)).astype(np.float32))
     points['Tonelaje'] = tonelaje
     points['Metal 1'] = metal_1
     points['Metal 2'] = metal_2
+    points['Ley'] = ley
     points['X'] = x
     points['Y'] = y
     points['Z'] = z
 
     cube = pv.Cube()
     glyphs = points.glyph(scale=False, geom=cube, orient=False)
+
+    mine_plan['ZIndex'] = -mine_plan['ZIndex']  # Hacer que el valor de Z sea negativo en el plan minero
 
     filtered_mine_plan = mine_plan[mine_plan['Period'] <= period_limit]
     mask = np.ones(len(points.points), dtype=bool)
@@ -39,11 +45,11 @@ def visualize_scenario(data, mine_plan, period_limit):
     glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
 
     plotter = pv.Plotter()
-    plotter.add_mesh(glyphs, scalars='Tonelaje', cmap='viridis')
+    plotter.add_mesh(glyphs, scalars='Ley', cmap='cividis')  # Usar 'Ley' para el color y la paleta 'cividis' (negro a amarillo)
     surface = glyphs.extract_surface()
     edges = surface.extract_feature_edges()
     plotter.add_mesh(edges, color="black", line_width=3)
-    plotter.add_scalar_bar(title='Tonelaje', label_font_size=12)
+    #plotter.add_scalar_bar(title='Tonelaje', label_font_size=12)
     plotter.enable_eye_dome_lighting()
     plotter.show_grid()
     plotter.show(auto_close=False)
@@ -57,5 +63,5 @@ def visualize_scenario(data, mine_plan, period_limit):
 
 def load_and_visualize_scenario(scenario_file, period_limit):
     scenario_data = load_scenario(scenario_file)
-    mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
+    mine_plan = pd.read_csv('data/MinePlan/MinePlan.txt')
     visualize_scenario(scenario_data, mine_plan, period_limit)
