@@ -3,6 +3,8 @@ import pyvista as pv
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+import io
+import base64
 
 
 def load_scenario(file_path):
@@ -80,12 +82,10 @@ def visualize_scenario(data, mine_plan, period_limit):
     glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
 
     plotter = pv.Plotter()
-    plotter.add_mesh(glyphs, scalars='Ley',
-                     cmap='cividis')  # Usar 'Ley' para el color y la paleta 'cividis' (negro a amarillo)
+    plotter.add_mesh(glyphs, scalars='Ley', cmap='cividis')  # Usar 'Ley' para el color y la paleta 'cividis' (negro a amarillo)
     surface = glyphs.extract_surface()
     edges = surface.extract_feature_edges()
     plotter.add_mesh(edges, color="black", line_width=3)
-    # plotter.add_scalar_bar(title='Tonelaje', label_font_size=12)
     plotter.enable_eye_dome_lighting()
     plotter.show_grid()
     plotter.show(auto_close=False)
@@ -131,4 +131,20 @@ def generate_histogram(scenario_data):
 
     # Ajustar diseño y mostrar gráficos
     plt.tight_layout()
+    plt.close(fig)  # Cerrar la figura para que no se muestre fuera de Dash
+    return fig
+
+
+def generate_tonnage_grade_curve(scenario_data):
+    sorted_data = scenario_data.sort_values(by='Ley', ascending=False)
+    sorted_data['Tonelaje Acumulado'] = sorted_data['Tonelaje total del bloque'].cumsum()
+    sorted_data['Ley Media Acumulada'] = (sorted_data['metal 1'].cumsum() / sorted_data['Tonelaje Acumulado'])
+
+    fig, ax = plt.subplots(figsize=(10, 6))
+    ax.plot(sorted_data['Tonelaje Acumulado'], sorted_data['Ley Media Acumulada'], color='red', linewidth=2)
+    ax.set_title('Curva Tonelaje-Ley')
+    ax.set_xlabel('Tonelaje Acumulado')
+    ax.set_ylabel('Ley Media Acumulada')
+    plt.grid(True)
+    plt.close(fig)  # Cerrar la figura para que no se muestre fuera de Dash
     return fig
