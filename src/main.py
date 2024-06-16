@@ -2,22 +2,16 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
 from modules.visualization import load_and_visualize_scenario
+from modules.visualization import generate_histogram
 
 # call the ability to add external scripts
 external_scripts = [
-
-# add the tailwind cdn url hosting the files with the utility classes
     {'src': 'https://cdn.tailwindcss.com'}
-
 ]
 
-app = dash.Dash(__name__, 
-
-# implement this into your Dash app instance
+app = dash.Dash(__name__,
            external_scripts=external_scripts
-
            )
-
 
 # Define la estructura de la interfaz
 app.layout = html.Div([
@@ -27,7 +21,8 @@ app.layout = html.Div([
         className="flex flex-wrap justify-center"
     ),
     html.Div(id='scenario-content', className="mt-8"),
-    dcc.Graph(id='3d-visualization', className="mt-4")
+    dcc.Graph(id='3d-visualization', className="mt-4"),
+    html.Div(id='upl-value', className="mt-4 text-center text-2xl font-bold")
 ], className="container mx-auto p-4")
 
 # Callback para manejar la visualización del escenario seleccionado
@@ -53,20 +48,20 @@ def display_scenario(*args):
         html.Div(id='hidden-div', children=scenario_file, style={'display': 'none'})
     ])
 
-# Callback para actualizar la visualización 3D
+# Callback para actualizar la visualización 3D y mostrar el valor del UPL
 @app.callback(
-    Output('3d-visualization', 'figure'),
+    [Output('3d-visualization', 'figure'),
+     Output('upl-value', 'children')],
     [Input('visualize-button', 'n_clicks')],
     [State('period-input', 'value'),
      State('hidden-div', 'children')]
 )
 def update_visualization(n_clicks, period, scenario_file):
     if n_clicks > 0:
-        load_and_visualize_scenario(scenario_file, period)
-        return {}  # Devuelve un gráfico vacío ya que pyvista maneja la visualización
-    return {}
+        upl_value = load_and_visualize_scenario(scenario_file, period)
+        return {}, f'Ultimate Pit Limit Value (Total Metal Content): {upl_value}'
+    return {}, ''
 
 # Ejecutar la aplicación
 if __name__ == '__main__':
     app.run_server(debug=True)
-

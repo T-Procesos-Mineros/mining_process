@@ -1,6 +1,9 @@
 import pandas as pd
 import pyvista as pv
 import numpy as np
+import networkx as nx
+import matplotlib.pyplot as plt
+
 
 def load_scenario(file_path):
     columns = ['X', 'Y', 'Z', 'Tonelaje total del bloque', 'metal 1', 'metal 2']
@@ -8,6 +11,38 @@ def load_scenario(file_path):
     data['Z'] = -data['Z']  # Hacer que el valor de Z sea negativo al leer los datos
     data['Ley'] = data['metal 1'] / data['Tonelaje total del bloque']  # Calcular la ley del mineral
     return data
+
+
+def create_graph(data):
+    G = nx.DiGraph()
+    source = 's'
+    sink = 't'
+
+    for _, row in data.iterrows():
+        block_id = (row['X'], row['Y'], row['Z'])
+        G.add_node(block_id)
+        if row['Z'] == data['Z'].min():
+            G.add_edge(source, block_id, capacity=row['Ley'])
+        else:
+            G.add_edge(block_id, sink, capacity=row['Ley'])
+
+        # Conectar los bloques adyacentes
+        for dz in [-1, 1]:
+            neighbor = (row['X'], row['Y'], row['Z'] + dz)
+            if neighbor in G:
+                G.add_edge(block_id, neighbor, capacity=float('inf'))
+                G.add_edge(neighbor, block_id, capacity=float('inf'))
+
+    G.add_node(source)
+    G.add_node(sink)
+
+    return G, source, sink
+
+
+def compute_upl(G, source, sink):
+    flow_value, flow_dict = nx.maximum_flow(G, source, sink)
+    return flow_value, flow_dict
+
 
 def visualize_scenario(data, mine_plan, period_limit):
     x = data['X'].astype(float)
@@ -45,11 +80,12 @@ def visualize_scenario(data, mine_plan, period_limit):
     glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
 
     plotter = pv.Plotter()
-    plotter.add_mesh(glyphs, scalars='Ley', cmap='cividis')  # Usar 'Ley' para el color y la paleta 'cividis' (negro a amarillo)
+    plotter.add_mesh(glyphs, scalars='Ley',
+                     cmap='cividis')  # Usar 'Ley' para el color y la paleta 'cividis' (negro a amarillo)
     surface = glyphs.extract_surface()
     edges = surface.extract_feature_edges()
     plotter.add_mesh(edges, color="black", line_width=3)
-    #plotter.add_scalar_bar(title='Tonelaje', label_font_size=12)
+    # plotter.add_scalar_bar(title='Tonelaje', label_font_size=12)
     plotter.enable_eye_dome_lighting()
     plotter.show_grid()
     plotter.show(auto_close=False)
@@ -61,7 +97,38 @@ def visualize_scenario(data, mine_plan, period_limit):
 
     return plotter
 
+
 def load_and_visualize_scenario(scenario_file, period_limit):
     scenario_data = load_scenario(scenario_file)
     mine_plan = pd.read_csv('data/MinePlan/MinePlan.txt')
     visualize_scenario(scenario_data, mine_plan, period_limit)
+
+    graph, source, sink = create_graph(scenario_data)
+    upl_value, upl_dict = compute_upl(graph, source, sink)
+
+    print(f"Ultimate Pit Limit (UPL): {upl_value}")
+    return upl_value
+
+
+def generate_histogram(scenario_data):
+    metal_1_data = scenario_data['metal 1']
+    metal_2_data = scenario_data['metal 2']
+
+    # Configurar la figura y los subplots
+    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+
+    # Histograma para Metal 1
+    axes[0].hist(metal_1_data, bins=20, color='blue', alpha=0.7)
+    axes[0].set_title('Histograma de Leyes para Metal 1')
+    axes[0].set_xlabel('Ley')
+    axes[0].set_ylabel('Frecuencia')
+
+    # Histograma para Metal 2
+    axes[1].hist(metal_2_data, bins=20, color='green', alpha=0.7)
+    axes[1].set_title('Histograma de Leyes para Metal 2')
+    axes[1].set_xlabel('Ley')
+    axes[1].set_ylabel('Frecuencia')
+
+    # Ajustar diseño y mostrar gráficos
+    plt.tight_layout()
+    return fig
