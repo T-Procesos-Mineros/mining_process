@@ -97,6 +97,29 @@ def visualize_scenario(data, mine_plan, period_limit):
 
     return plotter
 
+def visualize_2d(data, axis, axis_value):
+    # Filtrar los datos según el eje y valor seleccionados
+    if axis == 'X':
+        filtered_data = data[data['X'] == axis_value]
+        x_vals, y_vals = filtered_data['Y'], filtered_data['Z']
+    elif axis == 'Y':
+        filtered_data = data[data['Y'] == axis_value]
+        x_vals, y_vals = filtered_data['X'], filtered_data['Z']
+    elif axis == 'Z':
+        filtered_data = data[data['Z'] == -axis_value]
+        x_vals, y_vals = filtered_data['X'], filtered_data['Y']
+    else:
+        raise ValueError("Eje no válido. Debe ser 'X', 'Y' o 'Z'.")
+
+    # Crear la visualización en 2D
+    fig, ax = plt.subplots()
+    scatter = ax.scatter(x_vals, y_vals, c=filtered_data['Ley'], cmap='viridis')
+    ax.set_xlabel('Y' if axis == 'X' else 'X')
+    ax.set_ylabel('Z' if axis in ['X', 'Y'] else 'Y')
+    fig.colorbar(scatter, ax=ax, label='Ley')
+    ax.set_title(f'Visualización 2D en el plano {axis} = {axis_value}')
+
+    return fig
 
 def load_and_visualize_scenario(scenario_file, period_limit):
     scenario_data = load_scenario(scenario_file)
@@ -148,3 +171,5 @@ def generate_tonnage_grade_curve(scenario_data):
     plt.grid(True)
     plt.close(fig)  # Cerrar la figura para que no se muestre fuera de Dash
     return fig
+
+
