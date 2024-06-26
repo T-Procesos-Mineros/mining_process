@@ -172,4 +172,40 @@ def generate_tonnage_grade_curve(scenario_data):
     plt.close(fig)  # Cerrar la figura para que no se muestre fuera de Dash
     return fig
 
+def calculate_extracted_rock(scenario_data, mine_plan, period_limit):
+    # Asegúrate de que el eje Z en scenario_data sea positivo como en mine_plan
+    scenario_data['Z'] = -scenario_data['Z']
+
+    # Filtrar el plan minero hasta el límite del período especificado
+    filtered_mine_plan = mine_plan[mine_plan['Period'] == period_limit]
+
+    # Verificar si hay datos después de filtrar
+    if filtered_mine_plan.empty:
+        print(f"No hay datos para el período {period_limit} en el plan minero.")
+        return 0
+
+    # Verificar los datos filtrados del plan minero
+    print(f"Datos filtrados del plan minero (Periodo {period_limit}):")
+    print(filtered_mine_plan.head())
+
+    # Verificar la presencia de las columnas necesarias
+    print("Columnas en scenario_data:")
+    print(scenario_data.columns)
+    print("Columnas en filtered_mine_plan:")
+    print(filtered_mine_plan.columns)
+
+    # Unir los datos del escenario con el plan minero filtrado
+    merged_data = pd.merge(scenario_data, filtered_mine_plan, how='inner', left_on=['X', 'Y', 'Z'],
+                           right_on=['XIndex', 'YIndex', 'ZIndex'])
+
+    # Verificar los datos unidos
+    print("Datos unidos:")
+    print(merged_data.head())
+
+    # Calcular el tonelaje total extraído
+    extracted_tonnage = merged_data['Tonelaje total del bloque'].sum()
+
+    print(f"Tonelaje total extraído para el periodo {period_limit}: {extracted_tonnage}")
+
+    return extracted_tonnage
 

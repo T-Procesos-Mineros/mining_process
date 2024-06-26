@@ -2,10 +2,12 @@ import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
 from modules.visualization import load_and_visualize_scenario, load_scenario, generate_histogram, \
-    generate_tonnage_grade_curve, visualize_2d
+    generate_tonnage_grade_curve, visualize_2d, calculate_extracted_rock
+
 import io
 import base64
 import matplotlib.pyplot as plt
+import pandas as pd
 
 # call the ability to add external scripts
 external_scripts = [
@@ -115,7 +117,11 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         curve_img_base64 = base64.b64encode(curve_buf.read()).decode('utf-8')
         curve_img_src = f'data:image/png;base64,{curve_img_base64}'
 
-        return {}, f'Ultimate Pit Limit Value (Total Metal Content): {upl_value}', hist_img_src, curve_img_src
+        # Calcular el tonelaje extraído usando calculate_extracted_rock
+        mine_plan = pd.read_csv('data/MinePlan/MinePlan.txt')  # Asegúrate de que la ruta sea correcta
+        extracted_tonnage = calculate_extracted_rock(scenario_data, mine_plan, period)
+
+        return {}, f'Ultimate Pit Limit Value (Total Metal Content): {upl_value}. Cantidad de roca Total (tonelaje) extraído en el Período {period}: {extracted_tonnage}', hist_img_src, curve_img_src
 
     elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
         scenario_data = load_scenario(scenario_file)
