@@ -9,6 +9,7 @@ import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
 
+
 # Incluir las funciones de visualización y análisis de datos aquí
 def read_text_data(file_path):
     data = []
@@ -23,7 +24,23 @@ def load_scenario(file_path):
     data = pd.read_csv(file_path, header=None, names=columns)
     data['Z'] = -data['Z']
     data['Ley'] = data['metal 1'] / data['Tonelaje total del bloque']
+    #Aquí se llama la función para hacer el cálculo del valor del bloque
+    data['Valor'] = data.apply(lambda row: calculate_block_value(
+        row['Ley'], row['Tonelaje total del bloque']), axis=1)
     return data
+
+def calculate_block_value(ley, tonelaje):
+    # Primera fórmula
+    formula_1 = ley * metal_price * metal_recovery - (mining_cost + processing_cost) * tonelaje
+    # Segunda fórmula
+    formula_2 = -(mining_cost * tonelaje)
+
+    # Comparar y devolver el valor correspondiente
+    if formula_2 > formula_1:
+        return formula_2
+    else:
+        return formula_1
+
 
 def create_graph(data):
     G = nx.DiGraph()
@@ -92,6 +109,13 @@ def visualize_2d(data, axis, axis_value):
 def calculate_extracted_rock(data, mine_plan, period):
     extracted_rock = mine_plan[mine_plan['Period'] == period]['Tonnage'].sum()
     return extracted_rock
+
+
+metal_price = 1800000  # Ejemplo de valor
+metal_recovery = 0.85 # Ejemplo de valor
+mining_cost = 2.5  # Ejemplo de valor
+processing_cost = 5  # Ejemplo de valor
+
 
 external_scripts = [
     {'src': 'https://cdn.tailwindcss.com'}
