@@ -125,13 +125,18 @@ def visualize_scenario(data, mine_plan, period_limit):
     glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
 
     plotter = pv.Plotter()
-    plotter.add_mesh(glyphs, scalars='Ley', cmap='cividis')  # Usar 'Ley' para el color y la paleta 'cividis' (negro a amarillo)
-    surface = glyphs.extract_surface()
-    edges = surface.extract_feature_edges()
-    plotter.add_mesh(edges, color="black", line_width=3)
-    plotter.enable_eye_dome_lighting()
-    plotter.show_grid()
-    plotter.show(auto_close=False)
+
+    # Añadir una comprobación para asegurarse de que el contenedor tenga un gráfico antes de intentar mostrarlo
+    if plotter.renderer is None:
+        plotter.add_mesh(glyphs, scalars='Ley', cmap='cividis')  # Usar 'Ley' para el color y la paleta 'cividis' (negro a amarillo)
+        surface = glyphs.extract_surface()
+        edges = surface.extract_feature_edges()
+        plotter.add_mesh(edges, color="black", line_width=3)
+        plotter.enable_eye_dome_lighting()
+        plotter.show_grid()
+        plotter.show(auto_close=False)
+    else:
+        print("El contenedor del gráfico ya tiene un gráfico.")
 
     print(f"Rango de X: {x.min()} a {x.max()}")
     print(f"Rango de Y: {y.min()} a {y.max()}")
@@ -272,12 +277,10 @@ app.layout = html.Div([
                         className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mr-2"),
             html.Label('Seleccionar el Período:', className="ml-4"),
             dcc.Input(id='period-input', type='number', value=0, className="border-gray-300 border rounded px-2 py-1 ml-2 text-black"),
-            
             html.Button('Seleccionar Período', id='select-period-button', n_clicks=0,
                         className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded ml-2"),
         ], className="flex items-center justify-center"),
     ], className="bg-gray-800 text-white p-4"),
-
 
     html.Div([
         html.Label('Configuración Visualización 2D:', className="text-xl font-bold mt-4"),
@@ -315,10 +318,9 @@ app.layout = html.Div([
             html.Img(id='histogram', className="mt-4"),
             html.Img(id='tonnage-grade-curve', className="mt-4"),
             html.Div(id='upl-value', className="mt-4 text-center text-2xl font-bold"),
+            html.Div(id='hidden-div', style={'display': 'none'})  # Agregar hidden-div aquí
         ], className="flex-1 p-4"),
     ], className="flex"),
-    
-    # Configuración para visualización 2D
 ], className="h-screen")
 
 # Registro de callbacks ______________________________________________
