@@ -67,6 +67,10 @@ def max_flow(G, source, sink):
     flow_value, flow_dict = nx.maximum_flow(G, source, sink)
     return flow_value, flow_dict
 
+def compute_upl(G, source, sink):
+    flow_value, flow_dict = nx.maximum_flow(G, source, sink)
+    return flow_value, flow_dict
+
 def visualize_scenario(data):
     grid = pv.PolyData(data[['X', 'Y', 'Z']].values)
     plotter = pv.Plotter()
