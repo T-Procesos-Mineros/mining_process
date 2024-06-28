@@ -3,9 +3,6 @@ import pyvista as pv
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-import io
-import base64
-
 
 def load_scenario(file_path):
     columns = ['X', 'Y', 'Z', 'Tonelaje total del bloque', 'metal 1', 'metal 2']

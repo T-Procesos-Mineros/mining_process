@@ -1,9 +1,8 @@
 import dash
 from dash import dcc, html
-from dash.dependencies import Input, Output, State
+from dash.dependencies  import Input, Output, State
 from modules.visualization import load_and_visualize_scenario, load_scenario, generate_histogram, \
     generate_tonnage_grade_curve, visualize_2d, calculate_extracted_rock
-
 import io
 import base64
 import matplotlib.pyplot as plt

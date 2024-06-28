@@ -3,5 +3,5 @@ matplotlib
 pandas
 numpy
 pyvista
-os
 networkx
+dash
