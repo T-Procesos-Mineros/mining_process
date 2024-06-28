@@ -1,10 +1,10 @@
+import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
 import io
 import base64
 import pandas as pd
-from modules.visualization import load_and_visualize_scenario, load_scenario, generate_histogram, \
-    generate_tonnage_grade_curve, visualize_2d, calculate_extracted_rock
+from modules.visualization import load_and_visualize_scenario, load_scenario, generate_histogram, generate_tonnage_grade_curve, visualize_2d, calculate_extracted_rock
 
 def register_callbacks(app):
     @app.callback(
@@ -25,8 +25,6 @@ def register_callbacks(app):
             html.H2(f"Visualizando Escenario {scenario_index}", className="text-2xl font-bold mb-4"),
             html.Label("Seleccione el Período:", className="block mb-2"),
             dcc.Input(id='period-input', type='number', value=0, className="block mb-4"),
-            html.Button('Visualizar Escenario', id='visualize-button', n_clicks=0,
-                        className="bg-green-500 text-white px-4 py-2 rounded"),
             html.Div(id='hidden-div', children=scenario_file, style={'display': 'none'})
         ])
 

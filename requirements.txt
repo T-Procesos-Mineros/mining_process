@@ -1,7 +1,7 @@
-kivy
 matplotlib
 pandas
 numpy
 pyvista
 networkx
 dash
+flask
