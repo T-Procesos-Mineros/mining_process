@@ -31,22 +31,14 @@ def load_scenario(file_path):
     data = pd.read_csv(file_path, header=None, names=columns)
     data['Z'] = -data['Z']  # Hacer que el valor de Z sea negativo al leer los datos
     data['Ley'] = data['metal 1'] / data['Tonelaje total del bloque']  # Calcular la ley del mineral
-
-
-    #Aquí se llama la función para hacer el cálculo del valor del bloque
     data['Valor'] = data.apply(lambda row: calculate_block_value(
         row['Ley'], row['Tonelaje total del bloque']), axis=1)
-
     return data
 
 
 def calculate_block_value(ley, tonelaje):
-    # Primera fórmula
     formula_1 = ley * metal_price * metal_recovery - (mining_cost + processing_cost) * tonelaje
-    # Segunda fórmula
     formula_2 = -(mining_cost * tonelaje)
-
-    # Comparar y devolver el valor correspondiente
     if formula_2 > formula_1:
         return formula_2
     else:
@@ -147,7 +139,7 @@ def visualize_scenario(data, mine_plan, period_limit):
 
 def load_and_visualize_scenario(scenario_file, period_limit):
     scenario_data = load_scenario(scenario_file)
-    mine_plan = pd.read_csv('data/MinePlan/MinePlan.txt')
+    mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
     visualize_scenario(scenario_data, mine_plan, period_limit)
 
     graph, source, sink = create_graph(scenario_data)
@@ -277,10 +269,12 @@ app.layout = html.Div([
                         className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mr-2"),
             html.Label('Seleccionar el Período:', className="ml-4"),
             dcc.Input(id='period-input', type='number', value=0, className="border-gray-300 border rounded px-2 py-1 ml-2 text-black"),
+            
             html.Button('Seleccionar Período', id='select-period-button', n_clicks=0,
                         className="bg-blue-500 hover:bg-blue-700 text-white px-4 py-2 rounded ml-2"),
         ], className="flex items-center justify-center"),
     ], className="bg-gray-800 text-white p-4"),
+
 
     html.Div([
         html.Label('Configuración Visualización 2D:', className="text-xl font-bold mt-4"),
@@ -314,7 +308,8 @@ app.layout = html.Div([
         html.Div([
             html.H2("Plan Minero: Alto de los Andes", className="text-2xl font-bold mb-4 text-center"),
             html.Div(id='scenario-content', className="mt-8"),
-            dcc.Graph(id='3d-visualization', className="mt-4"),
+            # Elimina o comenta la siguiente línea para eliminar el gráfico 3D
+            # dcc.Graph(id='3d-visualization', className="mt-4"),
             html.Img(id='histogram', className="mt-4"),
             html.Img(id='tonnage-grade-curve', className="mt-4"),
             html.Div(id='upl-value', className="mt-4 text-center text-2xl font-bold"),
@@ -336,7 +331,7 @@ def display_scenario(*args):
         button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     scenario_index = int(button_id.split('-')[-1])
-    scenario_file = f'data/Scenarios/Scenario{str(scenario_index).zfill(2)}.txt'
+    scenario_file = f'src/data/Scenarios/Scenario{str(scenario_index).zfill(2)}.txt'
 
     return html.Div([
         html.H2(f"Visualizando Escenario {scenario_index}", className="text-2xl font-bold mb-4"),
@@ -345,8 +340,7 @@ def display_scenario(*args):
 
 # Callback combinado para actualizar la visualización 3D o 2D, mostrar el valor del UPL, el histograma y la curva Tonelaje-Ley
 @app.callback(
-    [Output('3d-visualization', 'figure'),
-     Output('upl-value', 'children'),
+    [Output('upl-value', 'children'),
      Output('histogram', 'src'),
      Output('tonnage-grade-curve', 'src')],
     [Input('visualize-button', 'n_clicks'),
@@ -360,7 +354,7 @@ def display_scenario(*args):
 def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, axis_value):
     ctx = dash.callback_context
     if not ctx.triggered:
-        return {}, '', '', ''
+        return '', '', ''
 
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
@@ -389,7 +383,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         mine_plan = pd.read_csv('data/MinePlan/MinePlan.txt')  # Asegúrate de que la ruta sea correcta
         extracted_tonnage = calculate_extracted_rock(scenario_data, mine_plan, period)
 
-        return {}, f'Ultimate Pit Limit Value (Total Metal Content): {upl_value}. Cantidad de roca Total (tonelaje) extraído en el Período {period}: {extracted_tonnage}', hist_img_src, curve_img_src
+        return f'Ultimate Pit Limit Value (Total Metal Content): {upl_value}. Cantidad de roca Total (tonelaje) extraído en el Período {period}: {extracted_tonnage}', hist_img_src, curve_img_src
 
     elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
         scenario_data = load_scenario(scenario_file)
@@ -402,9 +396,9 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         img_base64 = base64.b64encode(buf.read()).decode('utf-8')
         img_src = f'data:image/png;base64,{img_base64}'
 
-        return {}, '', img_src, ''
+        return '', img_src, ''
 
-    return {}, '', '', ''
+    return '', '', ''
 
 if __name__ == '__main__':
     app.run_server(debug=True)
