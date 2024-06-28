@@ -278,28 +278,7 @@ app.layout = html.Div([
         ], className="flex items-center justify-center"),
     ], className="bg-gray-800 text-white p-4"),
 
-    # Contenedor principal
-    html.Div([
-        # Sidebar izquierdo
-        html.Div([
-            html.Div([
-                html.Button(f"Escenario {i}", id=f"btn-scenario-{i}", n_clicks=0,
-                            className="bg-blue-700 hover:bg-blue-800 text-white py-2 px-4 rounded mb-2 text-left")
-                for i in range(10)
-            ], className="flex flex-col items-start"),
-        ], className="bg-gray-100 w-1/6 px-5 py-5"),
-        # Contenido principal
-        html.Div([
-            html.H2("Plan Minero", className="text-2xl font-bold mb-4 text-center"),
-            html.Div(id='scenario-content', className="mt-8"),
-            dcc.Graph(id='3d-visualization', className="mt-4"),
-            html.Img(id='histogram', className="mt-4"),
-            html.Img(id='tonnage-grade-curve', className="mt-4"),
-            html.Div(id='upl-value', className="mt-4 text-center text-2xl font-bold"),
-        ], className="flex-1 p-4"),
-    ], className="flex"),
-    
-    # Configuración para visualización 2D
+
     html.Div([
         html.Label('Configuración Visualización 2D:', className="text-xl font-bold mt-4"),
         html.Div([
@@ -317,6 +296,29 @@ app.layout = html.Div([
             dcc.Input(id='axis-value-input', type='number', value=0, className="border-gray-300 border rounded px-2 py-1"),
         ], className="flex flex-col md:flex-row md:items-center md:justify-between mt-4"),
     ], className="mx-auto p-4"),
+
+    # Contenedor principal
+    html.Div([
+        # Sidebar izquierdo
+        html.Div([
+            html.Div([
+                html.Button(f"Escenario {i + 1}", id=f"btn-scenario-{i}", n_clicks=0,
+                            className="bg-blue-700 hover:bg-blue-800 text-white py-2 px-5 rounded mb-2 w-flex")
+                for i in range(10)
+            ], className="flex flex-col items-start"),
+        ], className="bg-gray-100 w-1/6 px-5 py-5"),
+        # Contenido principal
+        html.Div([
+            html.H2("Plan Minero: Alto de los Andes", className="text-2xl font-bold mb-4 text-center"),
+            html.Div(id='scenario-content', className="mt-8"),
+            dcc.Graph(id='3d-visualization', className="mt-4"),
+            html.Img(id='histogram', className="mt-4"),
+            html.Img(id='tonnage-grade-curve', className="mt-4"),
+            html.Div(id='upl-value', className="mt-4 text-center text-2xl font-bold"),
+        ], className="flex-1 p-4"),
+    ], className="flex"),
+    
+    # Configuración para visualización 2D
 ], className="h-screen")
 
 # Registro de callbacks ______________________________________________
