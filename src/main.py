@@ -98,25 +98,22 @@ app.layout = html.Div([
     ], className="mt-4 flex flex-col items-center"),
     
     # Sección para los gráficos
-    html.Div(className="mt-8 flex flex-col items-center", children=[
-        # Contenedor para la visualización 2D y la curva Ley
-        html.Div(className="flex flex-row justify-center mb-4", children=[
-            html.Div(className="mx-2", children=[
-                html.Img(id='2d-visualization', className="mt-4"),
-                html.H4("Visualización 2D", className="text-center mt-2")  # Título opcional para la visualización 2D
-            ]),
-            html.Div(className="mx-2", children=[
-                html.Img(id='tonnage-grade-curve', className="mt-4"),
-                html.H4("Curva Ley", className="text-center mt-2")  # Título opcional para la curva Ley
-            ]),
+html.Div(className="mt-8 flex flex-col items-center", children=[
+    # Contenedor para la visualización 2D y la curva Ley
+    html.Div(className="flex flex-row justify-center mb-4", children=[
+        html.Div(className="mx-2", children=[
+            html.Img(id='2d-visualization', className="mt-4 w-64 h-64 object-cover"),  
         ]),
+        html.Div(className="mx-2", children=[
+            html.Img(id='tonnage-grade-curve', className="mt-4 w-64 h-64 object-cover"),
+        ]),
+    ]),
 
-        # Contenedor para el histograma
-        html.Div(className="mt-4", children=[
-            html.Img(id='histogram', className="mx-auto"),
-            html.H4("Histograma", className="text-center mt-2")  # Título opcional para el histograma
-        ]),
-    ])
+    # Contenedor para el histograma
+    html.Div(className="mt-4", children=[
+        html.Img(id='histogram', className="mx-auto w-64 h-64 object-cover"), 
+    ]),
+])
 ], className="w-full h-full")
 
 # Callback para manejar la visualización del escenario seleccionado
