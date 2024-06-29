@@ -5,3 +5,4 @@ pyvista
 networkx
 dash
 flask
+dash_vtk
