@@ -102,16 +102,16 @@ html.Div(className="mt-8 flex flex-col items-center", children=[
     # Contenedor para la visualización 2D y la curva Ley
     html.Div(className="flex flex-row justify-center mb-4", children=[
         html.Div(className="mx-2", children=[
-            html.Img(id='2d-visualization', className="mt-4 w-64 h-64 object-cover"),  
+            html.Img(id='2d-visualization', className="mt-4  object-cover"),  
         ]),
         html.Div(className="mx-2", children=[
-            html.Img(id='tonnage-grade-curve', className="mt-4 w-64 h-64 object-cover"),
+            html.Img(id='tonnage-grade-curve', className="mt-4 object-cover"),
         ]),
     ]),
 
     # Contenedor para el histograma
     html.Div(className="mt-4", children=[
-        html.Img(id='histogram', className="mx-auto w-64 h-64 object-cover"), 
+        html.Img(id='histogram', className="mx-auto object-cover"), 
     ]),
 ])
 ], className="w-full h-full")
