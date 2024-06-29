@@ -32,8 +32,19 @@ app.layout = html.Div([
         className="flex flex-wrap justify-center bg-gray-700", id='3d-visualization'
     ),
     
+    # Sección para el valor UPL
+    html.Div(id='upl-value', className="mt-4 text-center text-red-500 text-2xl"),
+    
     # Contenido del escenario
     html.Div(id='scenario-content', className="mt-8"),
+
+    # Botones
+    html.Div([
+        html.Button('Visualizar Escenario', id='visualize-button', n_clicks=0,
+                    className="bg-green-500 text-white px-4 py-2 rounded mx-2"),
+        html.Button('Visualizar en 2D', id='visualize-2d-button', n_clicks=0,
+                    className="bg-red-500 text-white px-4 py-2 rounded mx-2")
+    ], className="mt-4 text-center"),
     
     # Configuración 2D
     html.Div(id='2d-visualization-settings', children=[
@@ -63,19 +74,18 @@ app.layout = html.Div([
                     min=0,  # Valor mínimo
                     max=100,  # Valor máximo
                     step=1,  # Incremento del valor
-                    className="text-sm text-center w-24"  # Ajusta el ancho y centra el texto del input
+                    className="text-sm text-center w-24 border border-black"  # Ajusta el ancho y centra el texto del input
                 )
             ])
         ])
     ], className="mt-4 flex flex-col items-center"),
     
-    # Sección para los gráficos y el valor UPL
+    # Sección para los gráficos
     html.Div(className="mt-8", children=[
         html.Img(id='histogram', className="mt-4 mx-auto"),  # Para mostrar el histograma
         html.Img(id='tonnage-grade-curve', className="mt-4 mx-auto"),  # Para mostrar la curva Tonelaje-Ley
-        html.Div(id='upl-value', className="mt-4 text-center text-2xl")
     ])
-], className="w-full h-full bg-blue-100")
+], className="w-full h-full")
 
 # Callback para manejar la visualización del escenario seleccionado
 @app.callback(
@@ -103,17 +113,12 @@ def display_scenario(*args):
             min=0,  # Valor mínimo
             max=5,  # Valor máximo
             step=1,  # Incremento del valor
-            className="text-sm text-center inline-block"  # Centrando el texto del input
+            className="text-sm text-center inline-block border border-black w-24"  # Centrando el texto del input
         )
         ], className="mb-4 p-4 rounded-lg"),
-        html.Div([
-            html.Button('Visualizar Escenario', id='visualize-button', n_clicks=0,
-                        className="bg-green-500 text-white px-4 py-2 rounded mx-2"),
-            html.Button('Visualizar en 2D', id='visualize-2d-button', n_clicks=0,
-                        className="bg-red-500 text-white px-4 py-2 rounded mx-2")
-        ], className="mt-4"),
+        # Los botones ya están en el layout principal, no es necesario incluirlos aquí
         html.Div(id='hidden-div', children=scenario_file, style={'display': 'none'})
-    ], className="text-center bg-blue-100")
+    ], className="text-center")
 
 
 # Callback combinado para actualizar la visualización 3D o 2D, mostrar el valor del UPL, el histograma y la curva Tonelaje-Ley
