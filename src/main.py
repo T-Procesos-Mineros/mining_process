@@ -29,16 +29,17 @@ app.layout = html.Div([
         [html.Button(f"Escenario {i}", id=f"btn-scenario-{i}", n_clicks=0,
                      className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded mx-2 my-2") for i
          in range(10)],
-        className="flex flex-wrap justify-center bg-gray-700", id='3d-visualization'
+        className="flex flex-wrap justify-center bg-gray-700"
     ),
     
+    html.Div(id="3d-visualization", className=""),
     # Sección para el valor UPL
     html.Div(id='upl-value', className="mt-4 text-center text-red-500 text-2xl"),
     
     # Contenido del escenario
     html.Div(id='scenario-content', className="mt-8"),
 
-    html.Div(id='hidden-div', style={'display': 'none'}),  # Añade esto al layout principal
+    html.Div(id='hidden-div', style={'display': 'none'}),
 
     # Input de período
     html.Div([
@@ -127,7 +128,7 @@ def display_scenario(*args):
 
 # Callback combinado para actualizar la visualización 3D o 2D, mostrar el valor del UPL, el histograma y la curva Tonelaje-Ley
 @app.callback(
-    [Output('3d-visualization', 'figure'),
+    [Output('3d-visualization', 'children'),
      Output('upl-value', 'children'),
      Output('histogram', 'src'),
      Output('tonnage-grade-curve', 'src')],
@@ -147,9 +148,17 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
 
     if button_id == 'visualize-button' and n_clicks_3d > 0:
         upl_value = load_and_visualize_scenario(scenario_file, period)
-
+        
+        # Calcular el tonelaje extraído usando calculate_extracted_rock
         scenario_data = load_scenario(scenario_file)
+        mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')  # Asegúrate de que la ruta sea correcta
+        extracted_tonnage = calculate_extracted_rock(scenario_data, mine_plan, period)
 
+        return '', f'Ultimate Pit Limit Value (Total Metal Content): {upl_value}. Cantidad de roca Total (tonelaje) extraído en el Período {period}: {extracted_tonnage}', '', ''
+
+    elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
+        scenario_data = load_scenario(scenario_file)
+        
         # Generar el histograma
         hist_fig = generate_histogram(scenario_data)
         hist_buf = io.BytesIO()
@@ -164,28 +173,11 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         curve_fig.savefig(curve_buf, format='png')
         curve_buf.seek(0)
         curve_img_base64 = base64.b64encode(curve_buf.read()).decode('utf-8')
-        curve_img_src = f'src/data:image/png;base64,{curve_img_base64}'
+        curve_img_src = f'data:image/png;base64,{curve_img_base64}'
 
-        # Calcular el tonelaje extraído usando calculate_extracted_rock
-        mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')  # Asegúrate de que la ruta sea correcta
-        extracted_tonnage = calculate_extracted_rock(scenario_data, mine_plan, period)
+        return '', '', hist_img_src, curve_img_src
 
-        return {}, f'Ultimate Pit Limit Value (Total Metal Content): {upl_value}. Cantidad de roca Total (tonelaje) extraído en el Período {period}: {extracted_tonnage}', hist_img_src, curve_img_src
-
-    elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
-        scenario_data = load_scenario(scenario_file)
-        fig_2d = visualize_2d(scenario_data, axis, axis_value)  # Visualizar en 2D para el eje y valor seleccionados
-
-        # Convertir el gráfico de matplotlib a una imagen base64
-        buf = io.BytesIO()
-        fig_2d.savefig(buf, format='png')
-        buf.seek(0)
-        img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-        img_src = f'data:image/png;base64,{img_base64}'
-
-        return {}, '', img_src, ''
-
-    return {}, '', '', ''
+    return '', '', '', ''
 
 
 # Ejecutar la aplicación
