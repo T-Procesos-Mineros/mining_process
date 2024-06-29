@@ -38,11 +38,27 @@ app.layout = html.Div([
     # Contenido del escenario
     html.Div(id='scenario-content', className="mt-8"),
 
+    html.Div(id='hidden-div', style={'display': 'none'}),  # Añade esto al layout principal
+
+    # Input de período
+    html.Div([
+        html.Label("Seleccione el Período:", className="inline-block mr-2"),
+        dcc.Input(
+            id='period-input',
+            type='number',
+            value=0,
+            min=0,  # Valor mínimo
+            max=5,  # Valor máximo
+            step=1,  # Incremento del valor
+            className="text-sm text-center inline-block border border-black w-24"  # Centrando el texto del input
+        )
+    ], className="mb-4 p-4 rounded-lg text-center"),
+
     # Botones
     html.Div([
-        html.Button('Visualizar Escenario', id='visualize-button', n_clicks=0,
+        html.Button('Visualizar Escenario 3D', id='visualize-button', n_clicks=0,
                     className="bg-green-500 text-white px-4 py-2 rounded mx-2"),
-        html.Button('Visualizar en 2D', id='visualize-2d-button', n_clicks=0,
+        html.Button('Visualizar Escenario 2D', id='visualize-2d-button', n_clicks=0,
                     className="bg-red-500 text-white px-4 py-2 rounded mx-2")
     ], className="mt-4 text-center"),
     
@@ -104,18 +120,6 @@ def display_scenario(*args):
 
     return html.Div([
         html.H2(f"Visualizando Escenario {scenario_index}", className="text-2xl font-bold mb-4"),
-        html.Div([
-            html.Label("Seleccione el Período:", className="inline-block mr-2"),
-            dcc.Input(
-            id='period-input',
-            type='number',
-            value=0,
-            min=0,  # Valor mínimo
-            max=5,  # Valor máximo
-            step=1,  # Incremento del valor
-            className="text-sm text-center inline-block border border-black w-24"  # Centrando el texto del input
-        )
-        ], className="mb-4 p-4 rounded-lg"),
         # Los botones ya están en el layout principal, no es necesario incluirlos aquí
         html.Div(id='hidden-div', children=scenario_file, style={'display': 'none'})
     ], className="text-center")
