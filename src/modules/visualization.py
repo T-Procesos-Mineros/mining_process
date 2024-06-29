@@ -45,9 +45,9 @@ def create_graph(data):
         block_id = (row['X'], row['Y'], row['Z'])
         G.add_node(block_id)
         if row['Z'] == data['Z'].min():
-            G.add_edge(source, block_id, capacity=row['Ley'])
+            G.add_edge(source, block_id, capacity=row['Valor'])
         else:
-            G.add_edge(block_id, sink, capacity=row['Ley'])
+            G.add_edge(block_id, sink, capacity=row['Valor'])
 
         # Conectar los bloques adyacentes
         for dz in [-1, 1]:
@@ -153,8 +153,7 @@ def load_and_visualize_scenario(scenario_file, period_limit):
     upl_value, upl_dict = compute_upl(graph, source, sink)
 
     print(f"Ultimate Pit Limit (UPL): {upl_value}")
-    return upl_value
-
+    return round(upl_value,3)
 
 def generate_histogram(scenario_data):
     metal_1_data = scenario_data['metal 1']

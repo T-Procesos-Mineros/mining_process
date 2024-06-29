@@ -167,7 +167,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
         extracted_tonnage = calculate_extracted_rock(scenario_data, mine_plan, period)
 
-        return {}, f'Ultimate Pit Limit Value (Total Metal Content): {upl_value}. Cantidad de roca Total (tonelaje) extraído en el Período {period}: {extracted_tonnage}', '', '', ''
+        return {}, f'Ultimate Pit Limit Value (UPL): ${upl_value} USD. Cantidad de roca Total extraído en el Período {period}: {extracted_tonnage} Tm', '', '', ''
 
     elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
         scenario_data = load_scenario(scenario_file)
