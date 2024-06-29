@@ -18,33 +18,25 @@ app = dash.Dash(__name__,
                 external_scripts=external_scripts
                 )
 
+app.title = "Minera Alto los Andes"
+
 # Define la estructura de la interfaz
 app.layout = html.Div([
-    # Navbar
-    html.Div([
-        dcc.Input(id='plan-input', type='text', placeholder='Seleccionar Plan Minero', 
-                  className="border-2 border-gray-300 p-2 rounded mx-2 my-2"),
-        html.Button('Visualizar Escenario', id='visualize-button', n_clicks=0,
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 my-2"),
-        html.Button('Visualizar Escenario 2D', id='visualize-2d-button', n_clicks=0,
-                    className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded mx-2 my-2")
-    ], className="bg-gray-800 p-4 flex items-center justify-between text-white"),
-
-    # Botones de escenario en fila
-    html.Div([
-        html.Button(f"Escenario {i}", id=f"btn-scenario-{i}", n_clicks=0,
-                    className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mx-2 my-2") 
-        for i in range(1, 11)
-    ], className="flex flex-wrap justify-center px-4 py-2"),
-
-    # Contenido restante
+    html.H1("Plan Minero - Alto los Andes", className="text-4xl font-bold mb-8 py-5 text-center"),
+    html.Div(
+        [html.Button(f"Escenario {i}", id=f"btn-scenario-{i}", n_clicks=0,
+                     className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded mx-2 my-2") for i
+         in range(10)],
+        className="flex flex-wrap justify-center bg-gray-700", id='3d-visualization'
+    ),
+    
     html.Div(id='scenario-content', className="mt-8"),
-    dcc.Graph(id='3d-visualization', className="mt-4"),
     html.Img(id='histogram', className="mt-4"),  # Para mostrar el histograma
     html.Img(id='tonnage-grade-curve', className="mt-4"),  # Para mostrar la curva Tonelaje-Ley
-    html.Div(id='upl-value', className="mt-4 text-center text-2xl font-bold"),
+    html.Div(id='upl-value', className="mt-4 text-center text-2xl"),
+    # Configuración 2D
     html.Div(id='2d-visualization-settings', children=[
-        html.Label('Eje:'),
+        html.Label('Eje:', className="block text-sm font-medium text-gray-700"),
         dcc.Dropdown(
             id='axis-dropdown',
             options=[
@@ -52,12 +44,21 @@ app.layout = html.Div([
                 {'label': 'Y', 'value': 'Y'},
                 {'label': 'Z', 'value': 'Z'}
             ],
-            value='X'
+            value='X',
+            className="text-sm"
         ),
-        html.Label('Valor del Eje:'),
-        dcc.Input(id='axis-value-input', type='number', value=0)
-    ], className="mt-4")
-], className="container mx-auto p-4")
+        html.Label('Valor del Eje:', className="block text-sm font-medium text-gray-700 mt-2"),
+        dcc.Input(
+            id='axis-value-input',
+            type='number',
+            value=0,
+            min=0,  # Valor mínimo
+            max=100,  # Valor máximo
+            step=1,  # Incremento del valor
+            className="text-sm text-center"  # Centrando el texto del input
+        )
+    ], className="mt-4 flex flex-col items-center")
+], className="w-full h-full bg-blue-100")
 
 
 # Callback para manejar la visualización del escenario seleccionado
@@ -77,10 +78,26 @@ def display_scenario(*args):
 
     return html.Div([
         html.H2(f"Visualizando Escenario {scenario_index}", className="text-2xl font-bold mb-4"),
-        html.Label("Seleccione el Período:", className="block mb-2"),
-        dcc.Input(id='period-input', type='number', value=0, className="block mb-4"),
+        html.Div([
+            html.Label("Seleccione el Período:", className="inline-block mr-2"),
+            dcc.Input(
+            id='period-input',
+            type='number',
+            value=0,
+            min=0,  # Valor mínimo
+            max=5,  # Valor máximo
+            step=1,  # Incremento del valor
+            className="text-sm text-center inline-block"  # Centrando el texto del input
+        )
+        ], className="mb-4 p-4 rounded-lg"),
+        html.Div([
+            html.Button('Visualizar Escenario', id='visualize-button', n_clicks=0,
+                        className="bg-green-500 text-white px-4 py-2 rounded mx-2"),
+            html.Button('Visualizar en 2D', id='visualize-2d-button', n_clicks=0,
+                        className="bg-red-500 text-white px-4 py-2 rounded mx-2")
+        ], className="mt-4"),
         html.Div(id='hidden-div', children=scenario_file, style={'display': 'none'})
-    ])
+    ], className="text-center bg-blue-100")
 
 
 # Callback combinado para actualizar la visualización 3D o 2D, mostrar el valor del UPL, el histograma y la curva Tonelaje-Ley
