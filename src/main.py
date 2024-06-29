@@ -98,9 +98,24 @@ app.layout = html.Div([
     ], className="mt-4 flex flex-col items-center"),
     
     # Sección para los gráficos
-    html.Div(className="mt-8", children=[
-        html.Img(id='histogram', className="mt-4 mx-auto"),  # Para mostrar el histograma
-        html.Img(id='tonnage-grade-curve', className="mt-4 mx-auto"),  # Para mostrar la curva Tonelaje-Ley
+    html.Div(className="mt-8 flex flex-col items-center", children=[
+        # Contenedor para la visualización 2D y la curva Ley
+        html.Div(className="flex flex-row justify-center mb-4", children=[
+            html.Div(className="mx-2", children=[
+                html.Img(id='2d-visualization', className="mt-4"),
+                html.H4("Visualización 2D", className="text-center mt-2")  # Título opcional para la visualización 2D
+            ]),
+            html.Div(className="mx-2", children=[
+                html.Img(id='tonnage-grade-curve', className="mt-4"),
+                html.H4("Curva Ley", className="text-center mt-2")  # Título opcional para la curva Ley
+            ]),
+        ]),
+
+        # Contenedor para el histograma
+        html.Div(className="mt-4", children=[
+            html.Img(id='histogram', className="mx-auto"),
+            html.H4("Histograma", className="text-center mt-2")  # Título opcional para el histograma
+        ]),
     ])
 ], className="w-full h-full")
 
@@ -131,7 +146,8 @@ def display_scenario(*args):
     [Output('3d-visualization', 'children'),
      Output('upl-value', 'children'),
      Output('histogram', 'src'),
-     Output('tonnage-grade-curve', 'src')],
+     Output('tonnage-grade-curve', 'src'),
+     Output('2d-visualization', 'src')],
     [Input('visualize-button', 'n_clicks'),
      Input('visualize-2d-button', 'n_clicks')],
     [State('period-input', 'value'),
@@ -142,7 +158,7 @@ def display_scenario(*args):
 def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, axis_value):
     ctx = dash.callback_context
     if not ctx.triggered:
-        return {}, '', '', ''
+        return {}, '', '', '', ''
 
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
@@ -151,10 +167,10 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         
         # Calcular el tonelaje extraído usando calculate_extracted_rock
         scenario_data = load_scenario(scenario_file)
-        mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')  # Asegúrate de que la ruta sea correcta
+        mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
         extracted_tonnage = calculate_extracted_rock(scenario_data, mine_plan, period)
 
-        return '', f'Ultimate Pit Limit Value (Total Metal Content): {upl_value}. Cantidad de roca Total (tonelaje) extraído en el Período {period}: {extracted_tonnage}', '', ''
+        return {}, f'Ultimate Pit Limit Value (Total Metal Content): {upl_value}. Cantidad de roca Total (tonelaje) extraído en el Período {period}: {extracted_tonnage}', '', '', ''
 
     elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
         scenario_data = load_scenario(scenario_file)
@@ -175,9 +191,17 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         curve_img_base64 = base64.b64encode(curve_buf.read()).decode('utf-8')
         curve_img_src = f'data:image/png;base64,{curve_img_base64}'
 
-        return '', '', hist_img_src, curve_img_src
+        # Visualizar en 2D para el eje y valor seleccionados
+        fig_2d = visualize_2d(scenario_data, axis, axis_value)
+        buf = io.BytesIO()
+        fig_2d.savefig(buf, format='png')
+        buf.seek(0)
+        img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        img_src = f'data:image/png;base64,{img_base64}'
 
-    return '', '', '', ''
+        return {}, '', hist_img_src, curve_img_src, img_src
+
+    return {},'', '', '', ''
 
 
 # Ejecutar la aplicación
