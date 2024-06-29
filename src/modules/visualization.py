@@ -3,6 +3,7 @@ import pyvista as pv
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
+import panel as pn
 import io
 import base64
 
@@ -105,7 +106,8 @@ def visualize_scenario(data, mine_plan, period_limit):
     glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
 
     plotter = pv.Plotter()
-    plotter.add_mesh(glyphs, scalars='Ley', cmap='cividis')  # Usar 'Ley' para el color y la paleta 'cividis' (negro a amarillo)
+    plotter.add_mesh(glyphs, scalars='Ley', cmap='cividis', name='Ley_mesh')  # Usar 'Ley' para el color y la paleta 'cividis' (negro a amarillo)
+    #plotter.add_mesh(glyphs, scalars='Valor', cmap='viridis',name='Valor_mesh')  # Usar 'Valor' para el color y la paleta 'viridis'
     surface = glyphs.extract_surface()
     edges = surface.extract_feature_edges()
     plotter.add_mesh(edges, color="black", line_width=3)
@@ -120,7 +122,14 @@ def visualize_scenario(data, mine_plan, period_limit):
 
     return plotter
 
-def visualize_2d(data, axis, axis_value):
+def visualize_2d(data, axis, axis_value, mine_plan, period):
+    # Filtrar el plan minero hasta el período seleccionado
+    mine_plan['ZIndex'] = -mine_plan['ZIndex']  # Hacer que el valor de Z sea negativo en el plan minero
+    filtered_mine_plan = mine_plan[mine_plan['Period'] <= period]
+
+    # Eliminar bloques según el plan minero
+    for index, row in filtered_mine_plan.iterrows():
+        data = data[~((data['X'] == row['XIndex']) & (data['Y'] == row['YIndex']) & (data['Z'] == row['ZIndex']))]
     # Filtrar los datos según el eje y valor seleccionados
     if axis == 'X':
         filtered_data = data[data['X'] == axis_value]
@@ -135,7 +144,7 @@ def visualize_2d(data, axis, axis_value):
         raise ValueError("Eje no válido. Debe ser 'X', 'Y' o 'Z'.")
 
     # Crear la visualización en 2D
-    fig, ax = plt.subplots()
+    fig, ax = plt.subplots(figsize=(6, 6))
     scatter = ax.scatter(x_vals, y_vals, c=filtered_data['Ley'], cmap='cividis')
     ax.set_xlabel('Y' if axis == 'X' else 'X')
     ax.set_ylabel('Z' if axis in ['X', 'Y'] else 'Y')
@@ -161,7 +170,7 @@ def generate_histogram(scenario_data):
     metal_2_data = scenario_data['metal 2']
 
     # Configurar la figura y los subplots
-    fig, axes = plt.subplots(1, 2, figsize=(12, 6))
+    fig, axes = plt.subplots(1, 2, figsize=(10, 6))
 
     # Histograma para Metal 1
     axes[0].hist(metal_1_data, bins=20, color='blue', alpha=0.7)
@@ -186,7 +195,7 @@ def generate_tonnage_grade_curve(scenario_data):
     sorted_data['Tonelaje Acumulado'] = sorted_data['Tonelaje total del bloque'].cumsum()
     sorted_data['Ley Media Acumulada'] = (sorted_data['metal 1'].cumsum() / sorted_data['Tonelaje Acumulado'])
 
-    fig, ax = plt.subplots(figsize=(10, 6))
+    fig, ax = plt.subplots(figsize=(6, 6))
     ax.plot(sorted_data['Tonelaje Acumulado'], sorted_data['Ley Media Acumulada'], color='red', linewidth=2)
     ax.set_title('Curva Tonelaje-Ley')
     ax.set_xlabel('Tonelaje Acumulado')
@@ -231,4 +240,3 @@ def calculate_extracted_rock(scenario_data, mine_plan, period_limit):
     print(f"Tonelaje total extraído para el periodo {period_limit}: {extracted_tonnage}")
 
     return extracted_tonnage
-

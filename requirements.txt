@@ -1,7 +1,8 @@
-kivy
 matplotlib
 pandas
 numpy
 pyvista
-os
 networkx
+dash
+flask
+dash_vtk

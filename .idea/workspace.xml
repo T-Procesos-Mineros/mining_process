@@ -5,7 +5,23 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="2483f45f-8e3e-48af-846b-a4dad5ebbd21" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Proyecto.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/profiles_settings.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/mining_process.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Readme.md" beforeDir="false" afterPath="$PROJECT_DIR$/Readme.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/assets/index.html" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/requirements.txt" beforeDir="false" afterPath="$PROJECT_DIR$/requirements.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/data/RockTypes/RockTypes.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/data/RockTypes/RockTypes.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/main.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/modules/__init__.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/modules/file_manager.py" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/modules/mine_plan.py" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/modules/visualization.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/modules/visualization.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -55,7 +71,7 @@
     &quot;Python.visualization.executor&quot;: &quot;Run&quot;,
     &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
     &quot;SHARE_PROJECT_CONFIGURATION_FILES&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;hansE&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;Merging hansE&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/HansE/OneDrive/Escritorio/Universidad/CuartoSemestre/TIC_procesos_mineros/Taller/Proyecto&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
@@ -83,6 +99,7 @@
         <env name="PYTHONUNBUFFERED" value="1" />
       </envs>
       <option name="SDK_HOME" value="" />
+      <option name="SDK_NAME" value="Python 3.12 (pythonProject)" />
       <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
       <option name="IS_MODULE_SDK" value="false" />
       <option name="ADD_CONTENT_ROOTS" value="true" />
@@ -143,6 +160,11 @@
       <option name="INPUT_FILE" value="" />
       <method v="2" />
     </configuration>
+    <list>
+      <item itemvalue="Python.main" />
+      <item itemvalue="Python.mine_plan" />
+      <item itemvalue="Python.visualization" />
+    </list>
     <recent_temporary>
       <list>
         <item itemvalue="Python.main" />
@@ -176,6 +198,7 @@
       <workItem from="1718471641082" duration="3929000" />
       <workItem from="1718923036053" duration="4859000" />
       <workItem from="1719436845224" duration="3345000" />
+      <workItem from="1719699653496" duration="3911000" />
     </task>
     <servers />
   </component>
@@ -194,10 +217,10 @@
     </option>
   </component>
   <component name="com.intellij.coverage.CoverageDataManagerImpl">
-    <SUITE FILE_PATH="coverage/Proyecto$visualization.coverage" NAME="visualization Coverage Results" MODIFIED="1718473849187" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/modules" />
     <SUITE FILE_PATH="coverage/mining_process$mine_plan.coverage" NAME="mine_plan Coverage Results" MODIFIED="1718487485751" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/modules" />
+    <SUITE FILE_PATH="coverage/Proyecto$visualization.coverage" NAME="visualization Coverage Results" MODIFIED="1719698893492" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/modules" />
     <SUITE FILE_PATH="coverage/mining_process$main.coverage" NAME="main Coverage Results" MODIFIED="1719372680385" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
-    <SUITE FILE_PATH="coverage/Proyecto$main.coverage" NAME="main Coverage Results" MODIFIED="1719440211816" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
+    <SUITE FILE_PATH="coverage/Proyecto$main.coverage" NAME="main Coverage Results" MODIFIED="1719701161114" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src" />
     <SUITE FILE_PATH="coverage/Proyecto$mine_plan.coverage" NAME="mine_plan Coverage Results" MODIFIED="1718474333548" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/modules" />
     <SUITE FILE_PATH="coverage/mining_process$visualization.coverage" NAME="visualization Coverage Results" MODIFIED="1718487491152" SOURCE_PROVIDER="com.intellij.coverage.DefaultCoverageFileProvider" RUNNER="coverage.py" COVERAGE_BY_TEST_ENABLED="false" COVERAGE_TRACING_ENABLED="false" WORKING_DIRECTORY="$PROJECT_DIR$/src/modules" />
   </component>

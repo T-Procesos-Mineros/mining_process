@@ -1,0 +1,34 @@
+
+# Archivos de configuración del editor
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+
+# Entornos virtuales
+venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+tic_venv/
+
+
+# Archivos de compilación
+*.pyc
+*.pyo
+*.pyd
+__pycache__/
+
+
+# Archivos de logs
+*.log
+
+# Archivos temporales
+*.tmp
+*.temp
+*.swp
+
+# Archivos de configuración personal
+*.env
