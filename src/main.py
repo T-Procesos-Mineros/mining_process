@@ -23,6 +23,8 @@ app.title = "Minera Alto los Andes"
 # Define la estructura de la interfaz
 app.layout = html.Div([
     html.H1("Plan Minero - Alto los Andes", className="text-4xl font-bold mb-8 py-5 text-center"),
+    
+    # Botones de escenarios
     html.Div(
         [html.Button(f"Escenario {i}", id=f"btn-scenario-{i}", n_clicks=0,
                      className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded mx-2 my-2") for i
@@ -30,36 +32,50 @@ app.layout = html.Div([
         className="flex flex-wrap justify-center bg-gray-700", id='3d-visualization'
     ),
     
+    # Contenido del escenario
     html.Div(id='scenario-content', className="mt-8"),
-    html.Img(id='histogram', className="mt-4"),  # Para mostrar el histograma
-    html.Img(id='tonnage-grade-curve', className="mt-4"),  # Para mostrar la curva Tonelaje-Ley
-    html.Div(id='upl-value', className="mt-4 text-center text-2xl"),
+    
     # Configuración 2D
     html.Div(id='2d-visualization-settings', children=[
-        html.Label('Eje:', className="block text-sm font-medium text-gray-700"),
-        dcc.Dropdown(
-            id='axis-dropdown',
-            options=[
-                {'label': 'X', 'value': 'X'},
-                {'label': 'Y', 'value': 'Y'},
-                {'label': 'Z', 'value': 'Z'}
-            ],
-            value='X',
-            className="text-sm"
-        ),
-        html.Label('Valor del Eje:', className="block text-sm font-medium text-gray-700 mt-2"),
-        dcc.Input(
-            id='axis-value-input',
-            type='number',
-            value=0,
-            min=0,  # Valor mínimo
-            max=100,  # Valor máximo
-            step=1,  # Incremento del valor
-            className="text-sm text-center"  # Centrando el texto del input
-        )
-    ], className="mt-4 flex flex-col items-center")
+        html.Div(className="flex flex-wrap justify-center mb-4", children=[
+            # Contenedor para "Eje" y su Dropdown
+            html.Div(className="flex items-center mr-6", children=[
+                html.Label('Eje:', className="text-sm font-medium text-gray-700 mr-2"),
+                dcc.Dropdown(
+                    id='axis-dropdown',
+                    options=[
+                        {'label': 'X', 'value': 'X'},
+                        {'label': 'Y', 'value': 'Y'},
+                        {'label': 'Z', 'value': 'Z'}
+                    ],
+                    value='X',
+                    className="text-sm w-24"  # Ajusta el ancho del Dropdown
+                ),
+            ]),
+            
+            # Contenedor para "Valor del Eje" y su Input
+            html.Div(className="flex items-center", children=[
+                html.Label('Valor del Eje:', className="text-sm font-medium text-gray-700 mr-2"),
+                dcc.Input(
+                    id='axis-value-input',
+                    type='number',
+                    value=0,
+                    min=0,  # Valor mínimo
+                    max=100,  # Valor máximo
+                    step=1,  # Incremento del valor
+                    className="text-sm text-center w-24"  # Ajusta el ancho y centra el texto del input
+                )
+            ])
+        ])
+    ], className="mt-4 flex flex-col items-center"),
+    
+    # Sección para los gráficos y el valor UPL
+    html.Div(className="mt-8", children=[
+        html.Img(id='histogram', className="mt-4 mx-auto"),  # Para mostrar el histograma
+        html.Img(id='tonnage-grade-curve', className="mt-4 mx-auto"),  # Para mostrar la curva Tonelaje-Ley
+        html.Div(id='upl-value', className="mt-4 text-center text-2xl")
+    ])
 ], className="w-full h-full bg-blue-100")
-
 
 # Callback para manejar la visualización del escenario seleccionado
 @app.callback(
