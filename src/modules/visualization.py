@@ -134,8 +134,8 @@ def load_and_visualize_scenario(scenario_file, period_limit):
     return round(upl_value,3)
 
 def generate_histogram(scenario_data):
-    metal_1_data = scenario_data['metal 1']
-    metal_2_data = scenario_data['metal 2']
+    metal_1_data = scenario_data['metal 1'] / scenario_data['Tonelaje total del bloque']
+    metal_2_data = scenario_data['metal 2'] / scenario_data['Tonelaje total del bloque']
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 6))
 
