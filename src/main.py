@@ -174,6 +174,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         
         # Generar el histograma
         hist_fig = generate_histogram(scenario_data)
+        mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
         hist_buf = io.BytesIO()
         hist_fig.savefig(hist_buf, format='png')
         hist_buf.seek(0)
@@ -189,7 +190,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         curve_img_src = f'data:image/png;base64,{curve_img_base64}'
 
         # Visualizar en 2D para el eje y valor seleccionados
-        fig_2d = visualize_2d(scenario_data, axis, axis_value)
+        fig_2d = visualize_2d(scenario_data, axis, axis_value, mine_plan, period)
         buf = io.BytesIO()
         fig_2d.savefig(buf, format='png')
         buf.seek(0)

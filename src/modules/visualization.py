@@ -103,7 +103,15 @@ def visualize_scenario(data, mine_plan, period_limit):
 
     return plotter
 
-def visualize_2d(data, axis, axis_value):
+def visualize_2d(data, axis, axis_value, mine_plan, period):
+    # Filtrar el plan minero hasta el período seleccionado
+    mine_plan['ZIndex'] = -mine_plan['ZIndex']  # Hacer que el valor de Z sea negativo en el plan minero
+    filtered_mine_plan = mine_plan[mine_plan['Period'] <= period]
+
+    # Eliminar bloques según el plan minero
+    for index, row in filtered_mine_plan.iterrows():
+        data = data[~((data['X'] == row['XIndex']) & (data['Y'] == row['YIndex']) & (data['Z'] == row['ZIndex']))]
+    # Filtrar los datos según el eje y valor seleccionados
     if axis == 'X':
         filtered_data = data[data['X'] == axis_value]
         x_vals, y_vals = filtered_data['Y'], filtered_data['Z']
@@ -116,12 +124,14 @@ def visualize_2d(data, axis, axis_value):
     else:
         raise ValueError("Eje no válido. Debe ser 'X', 'Y' o 'Z'.")
 
+    # Crear la visualización en 2D
     fig, ax = plt.subplots(figsize=(6, 6))
-    scatter = ax.scatter(x_vals, y_vals, c=filtered_data['Ley'], cmap='cividis')
+    scatter = ax.scatter(x_vals, y_vals, c=filtered_data['Ley'], cmap='cividis', marker='s', s=500)
     ax.set_xlabel('Y' if axis == 'X' else 'X')
     ax.set_ylabel('Z' if axis in ['X', 'Y'] else 'Y')
     fig.colorbar(scatter, ax=ax, label='Ley')
     ax.set_title(f'Visualización 2D en el plano {axis} = {axis_value}')
+
     return fig
 
 def load_and_visualize_scenario(scenario_file, period_limit):
