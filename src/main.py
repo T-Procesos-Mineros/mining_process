@@ -178,7 +178,7 @@ def display_scenario(*args):
      State('mining_cost', 'value'),
      State('processing_cost', 'value')]
 )
-def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenario_file, axis, axis_value):
+def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenario_file, axis, axis_value,metal_price, metal_recovery, mining_cost, processing_cost):
     ctx = dash.callback_context
     if not ctx.triggered:
         return {}, '', '', '', ''
@@ -186,7 +186,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenari
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if button_id == 'visualize-button' and n_clicks_3d > 0:
-        load_and_visualize_scenario(scenario_file, period)
+        load_and_visualize_scenario(scenario_file, period,)
         return {}, '', '', '', ''
 
     elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
