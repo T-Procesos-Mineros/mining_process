@@ -200,6 +200,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenari
     elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
         if scenario_file:
             scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
+            mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
             hist_fig = generate_histogram(scenario_data)
             hist_buf = io.BytesIO()
             hist_fig.savefig(hist_buf, format='png')
@@ -216,7 +217,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenari
             curve_img_src = f'data:image/png;base64,{curve_img_base64}'
             plt.close(curve_fig)
 
-            fig_2d = visualize_2d(scenario_data, axis, axis_value)
+            fig_2d = visualize_2d(scenario_data, axis, axis_value, mine_plan, period)
             buf = io.BytesIO()
             fig_2d.savefig(buf, format='png')
             buf.seek(0)
