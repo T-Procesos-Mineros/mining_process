@@ -95,7 +95,7 @@ app.layout = html.Div([
                 dcc.Input(
                     id='axis-value-input',
                     type='number',
-                    value=0,
+                    value=12,
                     min=0,
                     max=100,
                     step=1,
