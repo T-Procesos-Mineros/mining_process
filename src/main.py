@@ -132,7 +132,7 @@ app.layout = html.Div([
     html.Div(className="mt-8 flex flex-col items-start", children=[
         html.Div(className="flex flex-row justify-start mb-4", children=[
             html.Div(className="mx-2", children=[
-                html.Img(id='2d-visualization', className="mt-4  object-cover"),
+                html.Img(id='2d-visualization', className="mt-4 object-cover"),
             ]),
             html.Div(className="mx-2", children=[
                 html.Img(id='tonnage-grade-curve', className="mt-4 object-cover"),
@@ -183,48 +183,53 @@ def display_scenario(*args):
      State('mining_cost', 'value'),
      State('processing_cost', 'value')]
 )
-def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenario_file, axis, axis_value,metal_price, metal_recovery, mining_cost, processing_cost):
+def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenario_file, axis, axis_value,
+                         metal_price, metal_recovery, mining_cost, processing_cost):
     ctx = dash.callback_context
     if not ctx.triggered:
         return {}, '', '', '', ''
 
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
+    # Ajustar la llamada a load_scenario para manejar parámetros opcionales
     if button_id == 'visualize-button' and n_clicks_3d > 0:
-        load_and_visualize_scenario(scenario_file, period,)
+        if scenario_file:
+            load_and_visualize_scenario(scenario_file, period, metal_price, metal_recovery, mining_cost, processing_cost)
         return {}, '', '', '', ''
 
     elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
-        scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
-        hist_fig = generate_histogram(scenario_data)
-        hist_buf = io.BytesIO()
-        hist_fig.savefig(hist_buf, format='png')
-        hist_buf.seek(0)
-        hist_img_base64 = base64.b64encode(hist_buf.read()).decode('utf-8')
-        hist_img_src = f'data:image/png;base64,{hist_img_base64}'
-        plt.close(hist_fig)  # Cerrar la figura del histograma
+        if scenario_file:
+            scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
+            hist_fig = generate_histogram(scenario_data)
+            hist_buf = io.BytesIO()
+            hist_fig.savefig(hist_buf, format='png')
+            hist_buf.seek(0)
+            hist_img_base64 = base64.b64encode(hist_buf.read()).decode('utf-8')
+            hist_img_src = f'data:image/png;base64,{hist_img_base64}'
+            plt.close(hist_fig)
 
-        curve_fig = generate_tonnage_grade_curve(scenario_data)
-        curve_buf = io.BytesIO()
-        curve_fig.savefig(curve_buf, format='png')
-        curve_buf.seek(0)
-        curve_img_base64 = base64.b64encode(curve_buf.read()).decode('utf-8')
-        curve_img_src = f'data:image/png;base64,{curve_img_base64}'
-        plt.close(curve_fig)  # Cerrar la figura de la curva Tonelaje-Ley
+            curve_fig = generate_tonnage_grade_curve(scenario_data)
+            curve_buf = io.BytesIO()
+            curve_fig.savefig(curve_buf, format='png')
+            curve_buf.seek(0)
+            curve_img_base64 = base64.b64encode(curve_buf.read()).decode('utf-8')
+            curve_img_src = f'data:image/png;base64,{curve_img_base64}'
+            plt.close(curve_fig)
 
-        fig_2d = visualize_2d(scenario_data, axis, axis_value)
-        buf = io.BytesIO()
-        fig_2d.savefig(buf, format='png')
-        buf.seek(0)
-        img_base64 = base64.b64encode(buf.read()).decode('utf-8')
-        img_src = f'data:image/png;base64,{img_base64}'
-        plt.close(fig_2d)  # Cerrar la figura 2D
+            fig_2d = visualize_2d(scenario_data, axis, axis_value)
+            buf = io.BytesIO()
+            fig_2d.savefig(buf, format='png')
+            buf.seek(0)
+            img_base64 = base64.b64encode(buf.read()).decode('utf-8')
+            img_src = f'data:image/png;base64,{img_base64}'
+            plt.close(fig_2d)
 
-        return {}, '', hist_img_src, curve_img_src, img_src
+            return {}, '', hist_img_src, curve_img_src, img_src
 
     elif button_id == 'upl-button' and n_clicks_upl > 0:
-        upl_value, upl_message = load_and_visualize_upl(scenario_file)
-        return {}, upl_message, '', '', ''
+        if scenario_file:
+            upl_value, upl_message = load_and_visualize_scenario(scenario_file, period, metal_price, metal_recovery, mining_cost, processing_cost)
+            return {}, upl_message, '', '', ''
 
     return {}, '', '', '', ''
 
