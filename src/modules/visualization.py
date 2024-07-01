@@ -78,7 +78,7 @@ def visualize_scenario(data, mine_plan, period_limit):
     glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
 
     plotter = pv.Plotter()
-    filterType = 'Valor'
+    filterType = 'Ley'
     plotter.add_mesh(glyphs, scalars=filterType, cmap='cividis')
     surface = glyphs.extract_surface()
     edges = surface.extract_feature_edges()
