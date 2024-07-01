@@ -26,8 +26,9 @@ app.layout = html.Div([
         className="flex flex-wrap justify-center bg-gray-700"
     ),
     html.H1("Plan Minero - Alto los Andes", className="text-3xl font-bold mb-8 py-5 text-center"),
-    
-    # Inputs para valores de cálculo
+    html.Div(id='3d-visualization'),
+    html.Div(id='scenario-content', className="mt-8"),
+        # Inputs para valores de cálculo
     html.Div([
         html.Label("Precio del Metal:", className="inline-block mr-2"),
         dcc.Input(
@@ -62,12 +63,9 @@ app.layout = html.Div([
         ),
         html.Button('Calcular Bloque', id='calculate_button', n_clicks=0,
                     className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded mx-2 mt-4")
+        ,html.Div(id='output', className="text-center mt-4"),
     ], className="mb-4 p-4 rounded-lg text-center"),
-    
-    html.Div(id='output', className="text-center mt-4"),
-    html.Div(id='3d-visualization'),
     html.Div(id='upl-value', className="mt-4 text-center text-red-500 text-2xl"),
-    html.Div(id='scenario-content', className="mt-8"),
     html.Div(id='hidden-div', style={'display': 'none'}),
     html.Div([
         html.Label("Seleccione el Período:", className="inline-block mr-2"),
