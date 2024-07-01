@@ -11,7 +11,7 @@ import base64
 from collections import defaultdict
 import itertools
 
-# Variables globales de ejemplo
+
 metal_price = 600000
 metal_recovery = 0.85
 mining_cost = 2.5
@@ -19,13 +19,13 @@ processing_cost = 5
 
 def load_scenario(file_path,metal_price=None, metal_recovery=None, mining_cost=None, processing_cost=None):
     if metal_price is None:
-        metal_price = 18000000  # Valor predeterminado
+        metal_price = 18000000
     if metal_recovery is None:
-        metal_recovery = 0.85  # Valor predeterminado
+        metal_recovery = 0.85
     if mining_cost is None:
-        mining_cost = 2.5  # Valor predeterminado
+        mining_cost = 2.5
     if processing_cost is None:
-        processing_cost = 5  # Valor predeterminado
+        processing_cost = 5
     columns = ['X', 'Y', 'Z', 'Tonelaje total del bloque', 'metal 1', 'metal 2']
     data = pd.read_csv(file_path, header=None, names=columns)
     data['Z'] = -data['Z']
@@ -40,18 +40,13 @@ def calculate_block_value(ley, tonelaje, metal_price, metal_recovery, mining_cos
     return max(formula_1, formula_2)
 
 def compute_upl(data):
-    # Implementación del algoritmo de Lerchs-Grossmann para calcular el UPL
     graph = nx.DiGraph()
     for index, row in data.iterrows():
         graph.add_node(index, value=row['Valor'])
-    
-    # Añadir aristas (edges) según las relaciones de adyacencia en el espacio 3D
     for index, row in data.iterrows():
         neighbors = find_neighbors(data, row['X'], row['Y'], row['Z'])
         for neighbor in neighbors:
             graph.add_edge(index, neighbor, weight=-data.loc[neighbor, 'Valor'])
-    
-    # Definir nodos super fuente (_s) y super sumidero (_t)
     _s = 'source'
     _t = 'sink'
     
@@ -210,18 +205,18 @@ def visualize_2d(data, axis, axis_value):
     ax.set_title(f'Visualización 2D en el plano {axis} = {axis_value}')
 
     plt.tight_layout()
-    plt.close(fig)  # Cerrar la figura del 2D
+    plt.close(fig)
     return fig
 
 def load_and_visualize_scenario(scenario_file, period_limit=None, metal_price=None, metal_recovery=None, mining_cost=None, processing_cost=None):
     if metal_price is None:
-        metal_price = 0  # valor predeterminado
+        metal_price = 0
     if metal_recovery is None:
-        metal_recovery = 0  # valor predeterminado
+        metal_recovery = 0
     if mining_cost is None:
-        mining_cost = 0  # valor predeterminado
+        mining_cost = 0
     if processing_cost is None:
-        processing_cost = 0  # valor predeterminado
+        processing_cost = 0
     scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
     mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
     visualize_scenario(scenario_data, mine_plan, period_limit)
@@ -259,13 +254,11 @@ def generate_histogram(scenario_data):
     axes[1].set_ylabel('Frecuencia')
 
     plt.tight_layout()
-    plt.close(fig)  # Cerrar la figura del histograma
+    plt.close(fig)
     return fig
 
 def generate_tonnage_grade_curve(data):
-    # Obtener la ley más alta presente en los datos
     max_grade = data['Ley'].max()
-    # Crear un rango de leyes de corte
     a = np.arange(0, max_grade, 0.01)
     datax = []
     datay = []
@@ -299,7 +292,7 @@ def generate_tonnage_grade_curve(data):
 
     plt.title('Curva tonelaje vs ley', fontsize=15)
     plt.grid(True)
-    plt.close(fig)  # Cerrar la figura de la curva Tonelaje-Ley
+    plt.close(fig)
     return fig
 
 def calculate_extracted_rock(scenario_data, mine_plan, period_limit):
