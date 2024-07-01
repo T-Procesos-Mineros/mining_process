@@ -9,7 +9,6 @@ import base64
 import pandas as pd
 import pyvista as pv
 
-# call the ability to add external scripts
 external_scripts = [
     {'src': 'https://cdn.tailwindcss.com'}
 ]
@@ -70,7 +69,7 @@ app.layout = html.Div([
             ]),
             html.Button('Calcular Bloque', id='calculate_button', n_clicks=0,
                         className="bg-yellow-500 text-white px-4 py-2 rounded mx-2"),
-            html.Div(id='output', className="mt-4"),
+            html.Div(id='output', className="mt-4 px-3"),
         ]),
     ]),
 
@@ -190,8 +189,6 @@ def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenari
         return {}, '', '', '', ''
 
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
-
-    # Ajustar la llamada a load_scenario para manejar parámetros opcionales
     if button_id == 'visualize-button' and n_clicks_3d > 0:
         if scenario_file:
             load_and_visualize_scenario(scenario_file, period, metal_price, metal_recovery, mining_cost, processing_cost)
@@ -240,22 +237,18 @@ def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenari
      State('metal_recovery', 'value'),
      State('mining_cost', 'value'),
      State('processing_cost', 'value'),
-     State('hidden-div', 'children')]  # Suponiendo que 'hidden-div' contiene el índice del escenario
+     State('hidden-div', 'children')]
 )
 def update_block_value(n_clicks, metal_price, metal_recovery, mining_cost, processing_cost, scenario_file):
     if n_clicks > 0:
         try:
-            # Determina el índice del escenario desde el div oculto
-            scenario_index = scenario_file.split('Scenario')[-1].split('.')[0]  # Ejemplo: '00'
+            scenario_index = scenario_file.split('Scenario')[-1].split('.')[0]
             file_path = f'src/data/Scenarios/Scenario{scenario_index}.txt'
-            
-            # Llama a la función load_scenario con los parámetros de entrada
             load_scenario(file_path, metal_price, metal_recovery, mining_cost, processing_cost)
             return html.Div([f'El bloque ha sido calculado con éxito para el escenario {scenario_index}.'], className="text-green-500")
         except Exception as e:
             return f'Error: {str(e)}'
     return html.Div(['Ingrese los valores y haga clic en "Calcular Bloque" para obtener el valor del bloque.'], className="text-red-500")
 
-# Ejecutar la aplicación
 if __name__ == '__main__':
     app.run_server(debug=True)
