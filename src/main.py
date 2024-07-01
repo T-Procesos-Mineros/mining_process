@@ -17,6 +17,7 @@ app = dash.Dash(__name__,
                 external_scripts=external_scripts
                 )
 app.title = "Minera Alto los Andes"
+
 app.layout = html.Div([
     html.Div(
         [html.Button(f"Escenario {i}", id=f"btn-scenario-{i}", n_clicks=0,
@@ -25,8 +26,46 @@ app.layout = html.Div([
         className="flex flex-wrap justify-center bg-gray-700"
     ),
     html.H1("Plan Minero - Alto los Andes", className="text-3xl font-bold mb-8 py-5 text-center"),
-    html.Div(id="3d-visualization"),
-
+    
+    # Inputs para valores de cálculo
+    html.Div([
+        html.Label("Precio del Metal:", className="inline-block mr-2"),
+        dcc.Input(
+            id='metal_price',
+            type='number',
+            value=1800000,
+            className="text-sm text-center inline-block border border-black w-24"
+        ),
+        html.Label("Recuperación del Metal:", className="inline-block mr-2 ml-4"),
+        dcc.Input(
+            id='metal_recovery',
+            type='number',
+            value=0.85,
+            step=0.01,
+            className="text-sm text-center inline-block border border-black w-24"
+        ),
+        html.Label("Costo de Minado:", className="inline-block mr-2 ml-4"),
+        dcc.Input(
+            id='mining_cost',
+            type='number',
+            value=2.5,
+            step=0.01,
+            className="text-sm text-center inline-block border border-black w-24"
+        ),
+        html.Label("Costo de Procesamiento:", className="inline-block mr-2 ml-4"),
+        dcc.Input(
+            id='processing_cost',
+            type='number',
+            value=5,
+            step=0.01,
+            className="text-sm text-center inline-block border border-black w-24"
+        ),
+        html.Button('Calcular Bloque', id='calculate_button', n_clicks=0,
+                    className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded mx-2 mt-4")
+    ], className="mb-4 p-4 rounded-lg text-center"),
+    
+    html.Div(id='output', className="text-center mt-4"),
+    html.Div(id='3d-visualization'),
     html.Div(id='upl-value', className="mt-4 text-center text-red-500 text-2xl"),
     html.Div(id='scenario-content', className="mt-8"),
     html.Div(id='hidden-div', style={'display': 'none'}),
@@ -93,7 +132,7 @@ app.layout = html.Div([
             html.Img(id='histogram', className="mx-auto object-cover"), 
         ]),
     ])
-    ], className="w-full h-full")
+], className="w-full h-full")
 
 
 @app.callback(
@@ -126,9 +165,14 @@ def display_scenario(*args):
     [State('period-input', 'value'),
      State('hidden-div', 'children'),
      State('axis-dropdown', 'value'),
-     State('axis-value-input', 'value')]
+     State('axis-value-input', 'value'),
+     State('metal_price', 'value'),
+     State('metal_recovery', 'value'),
+     State('mining_cost', 'value'),
+     State('processing_cost', 'value')]
 )
-def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, axis_value):
+def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, axis_value,
+                         metal_price, metal_recovery, mining_cost, processing_cost):
     ctx = dash.callback_context
     if not ctx.triggered:
         return {}, '', '', '', ''
@@ -136,15 +180,15 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if button_id == 'visualize-button' and n_clicks_3d > 0:
-        upl_value = load_and_visualize_scenario(scenario_file, period)
-        scenario_data = load_scenario(scenario_file)
+        upl_value = load_and_visualize_scenario(scenario_file, period, metal_price, metal_recovery, mining_cost, processing_cost)
+        scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
         mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
-        extracted_tonnage = calculate_extracted_rock(scenario_data, mine_plan, period)
+        extracted_tonnage = calculate_extracted_rock(load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost), mine_plan, period)
 
         return {}, f'Ultimate Pit Limit Value (UPL): ${upl_value} USD. Cantidad de roca Total extraído en el Período {period}: {extracted_tonnage} Tm', '', '', ''
 
     elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
-        scenario_data = load_scenario(scenario_file)
+        scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
         hist_fig = generate_histogram(scenario_data)
         hist_buf = io.BytesIO()
         hist_fig.savefig(hist_buf, format='png')
@@ -168,8 +212,30 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
 
         return {}, '', hist_img_src, curve_img_src, img_src
 
-    return {},'', '', '', ''
+    return {}, '', '', '', ''
 
+@app.callback(
+    Output('output', 'children'),
+    [Input('calculate_button', 'n_clicks')],
+    [State('metal_price', 'value'),
+     State('metal_recovery', 'value'),
+     State('mining_cost', 'value'),
+     State('processing_cost', 'value'),
+     State('hidden-div', 'children')]  # Suponiendo que 'hidden-div' contiene el índice del escenario
+)
+def update_block_value(n_clicks, metal_price, metal_recovery, mining_cost, processing_cost, scenario_file):
+    if n_clicks > 0:
+        try:
+            # Determina el índice del escenario desde el div oculto
+            scenario_index = scenario_file.split('Scenario')[-1].split('.')[0]  # Ejemplo: '00'
+            file_path = f'src/data/Scenarios/Scenario{scenario_index}.txt'
+            
+            # Llama a la función load_scenario con los parámetros de entrada
+            load_scenario(file_path, metal_price, metal_recovery, mining_cost, processing_cost)
+            return 'Los datos se han ingresado correctamente.'
+        except Exception as e:
+            return f'Error: {str(e)}'
+    return 'Introduce los valores y presiona el botón para calcular.'
 
 # Ejecutar la aplicación
 if __name__ == '__main__':

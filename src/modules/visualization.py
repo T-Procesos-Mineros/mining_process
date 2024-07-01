@@ -3,25 +3,17 @@ import pyvista as pv
 import numpy as np
 import networkx as nx
 import matplotlib.pyplot as plt
-import io
-import base64
 
-
-metal_price = 1800000
-metal_recovery = 0.85
-mining_cost = 2.5
-processing_cost = 5
-
-def load_scenario(file_path):
+def load_scenario(file_path, metal_price, metal_recovery, mining_cost, processing_cost):
     columns = ['X', 'Y', 'Z', 'Tonelaje total del bloque', 'metal 1', 'metal 2']
     data = pd.read_csv(file_path, header=None, names=columns)
     data['Z'] = -data['Z']
     data['Ley'] = data['metal 1'] / data['Tonelaje total del bloque']
     data['Valor'] = data.apply(lambda row: calculate_block_value(
-        row['Ley'], row['Tonelaje total del bloque']), axis=1)
+        row['Ley'], row['Tonelaje total del bloque'], metal_price, metal_recovery, mining_cost, processing_cost), axis=1)
     return data
 
-def calculate_block_value(ley, tonelaje):
+def calculate_block_value(ley, tonelaje, metal_price, metal_recovery, mining_cost, processing_cost):
     formula_1 = ley * metal_price * metal_recovery - (mining_cost + processing_cost) * tonelaje
     formula_2 = -(mining_cost * tonelaje)
     return max(formula_1, formula_2)
@@ -86,7 +78,8 @@ def visualize_scenario(data, mine_plan, period_limit):
     glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
 
     plotter = pv.Plotter()
-    plotter.add_mesh(glyphs, scalars='Ley', cmap='cividis')
+    filterType = 'Valor'
+    plotter.add_mesh(glyphs, scalars=filterType, cmap='cividis')
     surface = glyphs.extract_surface()
     edges = surface.extract_feature_edges()
     plotter.add_mesh(edges, color="black", line_width=3)
@@ -120,16 +113,18 @@ def visualize_2d(data, axis, axis_value):
     ax.set_ylabel('Z' if axis in ['X', 'Y'] else 'Y')
     fig.colorbar(scatter, ax=ax, label='Ley')
     ax.set_title(f'Visualización 2D en el plano {axis} = {axis_value}')
+    ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
+    ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
     return fig
 
-def load_and_visualize_scenario(scenario_file, period_limit):
-    scenario_data = load_scenario(scenario_file)
+def load_and_visualize_scenario(scenario_file, period_limit, metal_price, metal_recovery, mining_cost, processing_cost):
+    scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
     mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
     visualize_scenario(scenario_data, mine_plan, period_limit)
     graph, source, sink = create_graph(scenario_data)
     upl_value, upl_dict = compute_upl(graph, source, sink)
     print(f"Ultimate Pit Limit (UPL): {upl_value}")
-    return round(upl_value,3)
+    return round(upl_value, 3)
 
 def generate_histogram(scenario_data):
     metal_1_data = scenario_data['metal 1'] / scenario_data['Tonelaje total del bloque']
