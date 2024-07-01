@@ -30,6 +30,7 @@ def load_scenario(file_path,metal_price=None, metal_recovery=None, mining_cost=N
     data = pd.read_csv(file_path, header=None, names=columns)
     data['Z'] = -data['Z']
     data['Ley'] = data['metal 1'] / data['Tonelaje total del bloque']
+    data['Ley2'] = data['metal 2'] / data['Tonelaje total del bloque']
     data['Valor'] = data.apply(lambda row: calculate_block_value(
         row['Ley'], row['Tonelaje total del bloque'], metal_price, metal_recovery, mining_cost, processing_cost), axis=1)
     return data
@@ -99,6 +100,7 @@ def visualize_scenario(data, mine_plan, period_limit):
         metal_2 = np.zeros(len(data))  # Si no existe, usar una columna de ceros
     
     ley = data['Ley'].astype(float)
+    ley2 = data['Ley2'].astype(float)
     valor = data['Valor'].astype(float)
 
     points = pv.PolyData(np.column_stack((x, y, z)).astype(np.float32))
@@ -106,6 +108,7 @@ def visualize_scenario(data, mine_plan, period_limit):
     points['Metal 1'] = metal_1
     points['Metal 2'] = metal_2
     points['Ley'] = ley
+    points['Ley2'] = ley2
     points['Valor'] = valor
     points['X'] = x
     points['Y'] = y
@@ -243,8 +246,8 @@ def load_and_visualize_upl(scenario_file):
     return round(upl_value, 3), f'Ultimate Pit Limit Value (UPL): ${round(upl_value, 3)} USD'
 
 def generate_histogram(scenario_data):
-    metal_1_data = scenario_data['metal 1'] / scenario_data['Tonelaje total del bloque']
-    metal_2_data = scenario_data['metal 2'] / scenario_data['Tonelaje total del bloque']
+    metal_1_data = scenario_data['Ley']
+    metal_2_data = scenario_data['Ley2']
 
     fig, axes = plt.subplots(1, 2, figsize=(10, 6))
 
