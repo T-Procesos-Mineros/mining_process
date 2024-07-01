@@ -239,10 +239,10 @@ def update_block_value(n_clicks, metal_price, metal_recovery, mining_cost, proce
             
             # Llama a la función load_scenario con los parámetros de entrada
             load_scenario(file_path, metal_price, metal_recovery, mining_cost, processing_cost)
-            return 'Los datos se han ingresado correctamente.'
+            return html.Div([f'El bloque ha sido calculado con éxito para el escenario {scenario_index}.'], className="text-green-500")
         except Exception as e:
             return f'Error: {str(e)}'
-    return 'Introduce los valores y presiona el botón para calcular.'
+    return html.Div(['Ingrese los valores y haga clic en "Calcular Bloque" para obtener el valor del bloque.'], className="text-red-500")
 
 # Ejecutar la aplicación
 if __name__ == '__main__':
