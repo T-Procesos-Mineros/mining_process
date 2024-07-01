@@ -1,3 +1,6 @@
+import matplotlib
+matplotlib.use('Agg')  # Usar el backend 'Agg' para evitar problemas de GUI
+
 import pandas as pd
 import pyvista as pv
 import numpy as np
@@ -5,9 +8,11 @@ import networkx as nx
 import matplotlib.pyplot as plt
 import io
 import base64
+from collections import defaultdict
+import itertools
 
 # Variables globales de ejemplo
-metal_price = 1800000
+metal_price = 600000
 metal_recovery = 0.85
 mining_cost = 2.5
 processing_cost = 5
@@ -26,29 +31,51 @@ def calculate_block_value(ley, tonelaje):
     formula_2 = -(mining_cost * tonelaje)
     return max(formula_1, formula_2)
 
-def create_graph(data):
-    G = nx.DiGraph()
-    source = 's'
-    sink = 't'
-    for _, row in data.iterrows():
-        block_id = (row['X'], row['Y'], row['Z'])
-        G.add_node(block_id)
-        if row['Z'] == data['Z'].min():
-            G.add_edge(source, block_id, capacity=row['Valor'])
+def compute_upl(data):
+    # Implementación del algoritmo de Lerchs-Grossmann para calcular el UPL
+    graph = nx.DiGraph()
+    for index, row in data.iterrows():
+        graph.add_node(index, value=row['Valor'])
+    
+    # Añadir aristas (edges) según las relaciones de adyacencia en el espacio 3D
+    for index, row in data.iterrows():
+        neighbors = find_neighbors(data, row['X'], row['Y'], row['Z'])
+        for neighbor in neighbors:
+            graph.add_edge(index, neighbor, weight=-data.loc[neighbor, 'Valor'])
+    
+    # Definir nodos super fuente (_s) y super sumidero (_t)
+    _s = 'source'
+    _t = 'sink'
+    
+    graph.add_node(_s)
+    graph.add_node(_t)
+    
+    for index, row in data.iterrows():
+        if row['Valor'] > 0:
+            graph.add_edge(_s, index, weight=row['Valor'])
         else:
-            G.add_edge(block_id, sink, capacity=row['Valor'])
-        for dz in [-1, 1]:
-            neighbor = (row['X'], row['Y'], row['Z'] + dz)
-            if neighbor in G:
-                G.add_edge(block_id, neighbor, capacity=float('inf'))
-                G.add_edge(neighbor, block_id, capacity=float('inf'))
-    G.add_node(source)
-    G.add_node(sink)
-    return G, source, sink
+            graph.add_edge(index, _t, weight=-row['Valor'])
+    
+    flow_value, partition = nx.minimum_cut(graph, _s, _t, capacity='weight')
+    upl_nodes = list(partition[0] if _s in partition[0] else partition[1])
+    
+    # Excluir los nodos _s y _t
+    upl_nodes = [node for node in upl_nodes if node not in [_s, _t]]
+    
+    upl_blocks = data.loc[upl_nodes]
+    upl_blocks['UPL'] = True
+    
+    return upl_blocks
 
-def compute_upl(G, source, sink):
-    flow_value, flow_dict = nx.maximum_flow(G, source, sink)
-    return flow_value, flow_dict
+def find_neighbors(data, x, y, z):
+    neighbors = []
+    for dx, dy, dz in itertools.product([-1, 0, 1], repeat=3):
+        if dx == 0 and dy == 0 and dz == 0:
+            continue
+        neighbor = data[(data['X'] == x + dx) & (data['Y'] == y + dy) & (data['Z'] == z + dz)]
+        if not neighbor.empty:
+            neighbors.append(neighbor.index[0])
+    return neighbors
 
 def visualize_scenario(data, mine_plan, period_limit):
     x = data['X'].astype(float)
@@ -56,7 +83,13 @@ def visualize_scenario(data, mine_plan, period_limit):
     z = data['Z'].astype(float)
     tonelaje = data['Tonelaje total del bloque'].astype(float)
     metal_1 = data['metal 1'].astype(float)
-    metal_2 = data['metal 2'].astype(float)
+    
+    # Verificar si la columna 'metal_2' existe
+    if 'metal_2' in data.columns:
+        metal_2 = data['metal_2'].astype(float)
+    else:
+        metal_2 = np.zeros(len(data))  # Si no existe, usar una columna de ceros
+    
     ley = data['Ley'].astype(float)
     valor = data['Valor'].astype(float)
 
@@ -96,10 +129,56 @@ def visualize_scenario(data, mine_plan, period_limit):
     plotter.show_grid()
     plotter.show(auto_close=False)
 
-    print(f"Rango de X: {x.min()} a {x.max()}")
-    print(f"Rango de Y: {y.min()} a {y.max()}")
-    print(f"Rango de Z: {z.min()} a {z.max()}")
-    print(f"Valores únicos de Z: {z.unique()}")
+    return plotter
+
+def visualize_upl(data):
+    if 'Ley' not in data.columns:
+        raise KeyError("La columna 'Ley' no está presente en los datos.")
+
+    x = data['X'].astype(float)
+    y = data['Y'].astype(float)
+    z = data['Z'].astype(float)
+    tonelaje = data['Tonelaje total del bloque'].astype(float)
+    metal_1 = data['metal 1'].astype(float)
+    
+    # Verificar si la columna 'metal_2' existe
+    if 'metal_2' in data.columns:
+        metal_2 = data['metal_2'].astype(float)
+    else:
+        metal_2 = np.zeros(len(data))  # Si no existe, usar una columna de ceros
+    
+    ley = data['Ley'].astype(float)
+    valor = data['Valor'].astype(float)
+
+    points = pv.PolyData(np.column_stack((x, y, z)).astype(np.float32))
+    points['Tonelaje'] = tonelaje
+    points['Metal 1'] = metal_1
+    points['Metal 2'] = metal_2
+    points['Ley'] = ley
+    points['Valor'] = valor
+    points['X'] = x
+    points['Y'] = y
+    points['Z'] = z
+
+    upl_mask = data['UPL']
+    points['UPL'] = upl_mask
+
+    cube = pv.Cube()
+    glyphs = points.glyph(scale=False, geom=cube, orient=False)
+
+    plotter = pv.Plotter()
+    plotter.add_mesh(glyphs, scalars='Ley', cmap='cividis')
+    surface = glyphs.extract_surface()
+    edges = surface.extract_feature_edges()
+    plotter.add_mesh(edges, color="black", line_width=3)
+    
+    upl_points = points.extract_points(points['UPL'] == True)
+    upl_glyphs = upl_points.glyph(scale=False, geom=cube, orient=False)
+    plotter.add_mesh(upl_glyphs, color='red')
+
+    plotter.enable_eye_dome_lighting()
+    plotter.show_grid()
+    plotter.show(auto_close=False)
 
     return plotter
 
@@ -132,16 +211,30 @@ def visualize_2d(data, axis, axis_value, mine_plan, period):
     fig.colorbar(scatter, ax=ax, label='Ley')
     ax.set_title(f'Visualización 2D en el plano {axis} = {axis_value}')
 
+    plt.tight_layout()
+    plt.close(fig)  # Cerrar la figura del 2D
     return fig
 
 def load_and_visualize_scenario(scenario_file, period_limit):
     scenario_data = load_scenario(scenario_file)
     mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
     visualize_scenario(scenario_data, mine_plan, period_limit)
-    graph, source, sink = create_graph(scenario_data)
-    upl_value, upl_dict = compute_upl(graph, source, sink)
-    print(f"Ultimate Pit Limit (UPL): {upl_value}")
-    return round(upl_value,3)
+    print_total_value(scenario_file)
+
+def print_total_value(scenario_file):
+    scenario_data = load_scenario(scenario_file)
+    total_value = scenario_data['Valor'].sum()
+    print(f"Valor total del yacimiento: ${total_value:.2f} USD")
+
+def load_and_visualize_upl(scenario_file):
+    scenario_data = load_scenario(scenario_file)
+    upl_data = compute_upl(scenario_data)
+    if upl_data.empty or upl_data['Valor'].sum() == 0:
+        print("No se puede visualizar el UPL, ya que no es rentable extraer el mineral del yacimiento.")
+        return 0, "No se puede visualizar el UPL, ya que no es rentable extraer el mineral del yacimiento."
+    visualize_upl(upl_data)
+    upl_value = upl_data['Valor'].sum()
+    return round(upl_value, 3), f'Ultimate Pit Limit Value (UPL): ${round(upl_value, 3)} USD'
 
 def generate_histogram(scenario_data):
     metal_1_data = scenario_data['metal 1'] / scenario_data['Tonelaje total del bloque']
@@ -160,7 +253,7 @@ def generate_histogram(scenario_data):
     axes[1].set_ylabel('Frecuencia')
 
     plt.tight_layout()
-    plt.close(fig)
+    plt.close(fig)  # Cerrar la figura del histograma
     return fig
 
 def generate_tonnage_grade_curve(data):
@@ -200,7 +293,7 @@ def generate_tonnage_grade_curve(data):
 
     plt.title('Curva tonelaje vs ley', fontsize=15)
     plt.grid(True)
-    plt.close(fig)  # Cerrar la figura para que no se muestre fuera de Dash
+    plt.close(fig)  # Cerrar la figura de la curva Tonelaje-Ley
     return fig
 
 def calculate_extracted_rock(scenario_data, mine_plan, period_limit):

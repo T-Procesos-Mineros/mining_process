@@ -1,13 +1,13 @@
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output, State
+import matplotlib.pyplot as plt
 from modules.visualization import load_and_visualize_scenario, load_scenario, generate_histogram, \
-    generate_tonnage_grade_curve, visualize_2d, calculate_extracted_rock
-
+    generate_tonnage_grade_curve, visualize_2d, calculate_extracted_rock, compute_upl, visualize_scenario, load_and_visualize_upl
 import io
 import base64
-import matplotlib.pyplot as plt
 import pandas as pd
+import pyvista as pv
 
 # call the ability to add external scripts
 external_scripts = [
@@ -60,7 +60,9 @@ app.layout = html.Div([
         html.Button('Visualizar Escenario 3D', id='visualize-button', n_clicks=0,
                     className="bg-green-500 text-white px-4 py-2 rounded mx-2"),
         html.Button('Visualizar Escenario 2D', id='visualize-2d-button', n_clicks=0,
-                    className="bg-red-500 text-white px-4 py-2 rounded mx-2")
+                    className="bg-red-500 text-white px-4 py-2 rounded mx-2"),
+        html.Button('Calcular y Visualizar UPL', id='upl-button', n_clicks=0,
+                    className="bg-yellow-500 text-white px-4 py-2 rounded mx-2")        
     ], className="mt-4 text-center"),
     
     # Configuración 2D
@@ -98,22 +100,22 @@ app.layout = html.Div([
     ], className="mt-4 flex flex-col items-center"),
     
     # Sección para los gráficos
-html.Div(className="mt-8 flex flex-col items-center", children=[
-    # Contenedor para la visualización 2D y la curva Ley
-    html.Div(className="flex flex-row justify-center mb-4", children=[
-        html.Div(className="mx-2", children=[
-            html.Img(id='2d-visualization', className="mt-4  object-cover"),  
+    html.Div(className="mt-8 flex flex-col items-center", children=[
+        # Contenedor para la visualización 2D y la curva Ley
+        html.Div(className="flex flex-row justify-center mb-4", children=[
+            html.Div(className="mx-2", children=[
+                html.Img(id='2d-visualization', className="mt-4  object-cover"),  
+            ]),
+            html.Div(className="mx-2", children=[
+                html.Img(id='tonnage-grade-curve', className="mt-4 object-cover"),
+            ]),
         ]),
-        html.Div(className="mx-2", children=[
-            html.Img(id='tonnage-grade-curve', className="mt-4 object-cover"),
-        ]),
-    ]),
 
-    # Contenedor para el histograma
-    html.Div(className="mt-4", children=[
-        html.Img(id='histogram', className="mx-auto object-cover"), 
-    ]),
-])
+        # Contenedor para el histograma
+        html.Div(className="mt-4", children=[
+            html.Img(id='histogram', className="mx-auto object-cover"), 
+        ]),
+    ])
 ], className="w-full h-full")
 
 # Callback para manejar la visualización del escenario seleccionado
@@ -146,13 +148,14 @@ def display_scenario(*args):
      Output('tonnage-grade-curve', 'src'),
      Output('2d-visualization', 'src')],
     [Input('visualize-button', 'n_clicks'),
-     Input('visualize-2d-button', 'n_clicks')],
+     Input('visualize-2d-button', 'n_clicks'),
+     Input('upl-button', 'n_clicks')],
     [State('period-input', 'value'),
      State('hidden-div', 'children'),
      State('axis-dropdown', 'value'),
      State('axis-value-input', 'value')]
 )
-def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, axis_value):
+def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenario_file, axis, axis_value):
     ctx = dash.callback_context
     if not ctx.triggered:
         return {}, '', '', '', ''
@@ -160,14 +163,8 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
 
     if button_id == 'visualize-button' and n_clicks_3d > 0:
-        upl_value = load_and_visualize_scenario(scenario_file, period)
-        
-        # Calcular el tonelaje extraído usando calculate_extracted_rock
-        scenario_data = load_scenario(scenario_file)
-        mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
-        extracted_tonnage = calculate_extracted_rock(scenario_data, mine_plan, period)
-
-        return {}, f'Ultimate Pit Limit Value (UPL): ${upl_value} USD. Cantidad de roca Total extraído en el Período {period}: {extracted_tonnage} Tm', '', '', ''
+        load_and_visualize_scenario(scenario_file, period)
+        return {}, '', '', '', ''
 
     elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
         scenario_data = load_scenario(scenario_file)
@@ -180,6 +177,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         hist_buf.seek(0)
         hist_img_base64 = base64.b64encode(hist_buf.read()).decode('utf-8')
         hist_img_src = f'data:image/png;base64,{hist_img_base64}'
+        plt.close(hist_fig)  # Cerrar la figura del histograma
 
         # Generar la curva Tonelaje-Ley
         curve_fig = generate_tonnage_grade_curve(scenario_data)
@@ -188,6 +186,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         curve_buf.seek(0)
         curve_img_base64 = base64.b64encode(curve_buf.read()).decode('utf-8')
         curve_img_src = f'data:image/png;base64,{curve_img_base64}'
+        plt.close(curve_fig)  # Cerrar la figura de la curva Tonelaje-Ley
 
         # Visualizar en 2D para el eje y valor seleccionados
         fig_2d = visualize_2d(scenario_data, axis, axis_value, mine_plan, period)
@@ -196,10 +195,15 @@ def update_visualization(n_clicks_3d, n_clicks_2d, period, scenario_file, axis, 
         buf.seek(0)
         img_base64 = base64.b64encode(buf.read()).decode('utf-8')
         img_src = f'data:image/png;base64,{img_base64}'
+        plt.close(fig_2d)  # Cerrar la figura 2D
 
         return {}, '', hist_img_src, curve_img_src, img_src
 
-    return {},'', '', '', ''
+    elif button_id == 'upl-button' and n_clicks_upl > 0:
+        upl_value, upl_message = load_and_visualize_upl(scenario_file)
+        return {}, upl_message, '', '', ''
+
+    return {}, '', '', '', ''
 
 
 # Ejecutar la aplicación
