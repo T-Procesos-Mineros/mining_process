@@ -26,70 +26,57 @@ app.layout = html.Div([
         className="flex flex-wrap justify-center bg-gray-700"
     ),
     html.H1("Plan Minero - Alto los Andes", className="text-3xl font-bold mb-8 py-5 text-center"),
-    html.Div(id='3d-visualization'),
-    html.Div(id='scenario-content', className="mt-8"),
-        # Inputs para valores de cálculo
-    html.Div([
-        html.Label("Precio del Metal:", className="inline-block mr-2"),
-        dcc.Input(
-            id='metal_price',
-            type='number',
-            value=1800000,
-            className="text-sm text-center inline-block border border-black w-24"
-        ),
-        html.Label("Recuperación del Metal:", className="inline-block mr-2 ml-4"),
-        dcc.Input(
-            id='metal_recovery',
-            type='number',
-            value=0.85,
-            step=0.01,
-            className="text-sm text-center inline-block border border-black w-24"
-        ),
-        html.Label("Costo de Minado:", className="inline-block mr-2 ml-4"),
-        dcc.Input(
-            id='mining_cost',
-            type='number',
-            value=2.5,
-            step=0.01,
-            className="text-sm text-center inline-block border border-black w-24"
-        ),
-        html.Label("Costo de Procesamiento:", className="inline-block mr-2 ml-4"),
-        dcc.Input(
-            id='processing_cost',
-            type='number',
-            value=5,
-            step=0.01,
-            className="text-sm text-center inline-block border border-black w-24"
-        ),
-        html.Button('Calcular Bloque', id='calculate_button', n_clicks=0,
-                    className="bg-blue-500 hover:bg-blue-700 text-white py-2 px-4 rounded mx-2 mt-4")
-        ,html.Div(id='output', className="text-center mt-4"),
-    ], className="mb-4 p-4 rounded-lg text-center"),
-    html.Div(id='upl-value', className="mt-4 text-center text-red-500 text-2xl"),
-    html.Div(id='hidden-div', style={'display': 'none'}),
-    html.Div([
-        html.Label("Seleccione el Período:", className="inline-block mr-2"),
-        dcc.Input(
-            id='period-input',
-            type='number',
-            value=0,
-            min=0,
-            max=5, 
-            step=1,  
-            className="text-sm text-center inline-block border border-black w-24"
-        )
-    ], className="mb-4 p-4 rounded-lg text-center"),
-    html.Div([
-        html.Button('Visualizar Escenario 3D', id='visualize-button', n_clicks=0,
-                    className="bg-green-500 text-white px-4 py-2 rounded mx-2"),
-        html.Button('Visualizar Escenario 2D', id='visualize-2d-button', n_clicks=0,
-                    className="bg-red-500 text-white px-4 py-2 rounded mx-2"),
-        html.Button('Calcular y Visualizar UPL', id='upl-button', n_clicks=0,
-                    className="bg-yellow-500 text-white px-4 py-2 rounded mx-2")        
-    ], className="mt-4 text-center"),
-    
-    html.Div(id='2d-visualization-settings', children=[
-        html.Div(className="flex flex-wrap justify-center mb-4", children=[
+    html.Div(id="scenario-content"),
+
+    html.Div(className="bg-gray-200 p-4 mb-4 rounded", children=[
+        html.H2("Cálculo para el Bloque", className="text-xl font-bold mb-4"),
+        html.Div(className="flex flex-wrap justify-start", children=[
+            html.Div(className="flex items-center mr-6", children=[
+                html.Label('Precio del Metal:', className="text-sm font-medium text-gray-700 mr-2"),
+                dcc.Input(
+                    id='metal_price',
+                    type='number',
+                    value=18000000,
+                    step=1,
+                    className="text-sm text-center w-24 border border-black"
+                ),
+            ]),
+            html.Div(className="flex items-center mr-6", children=[
+                html.Label('Recuperación del Metal:', className="text-sm font-medium text-gray-700 mr-2"),
+                dcc.Input(
+                    id='metal_recovery',
+                    type='number',
+                    value=0.85,
+                    className="text-sm text-center w-24 border border-black"
+                ),
+            ]),
+            html.Div(className="flex items-center mr-6", children=[
+                html.Label('Costo de Minería:', className="text-sm font-medium text-gray-700 mr-2"),
+                dcc.Input(
+                    id='mining_cost',
+                    type='number',
+                    value=2.5,
+                    className="text-sm text-center w-24 border border-black"
+                ),
+            ]),
+            html.Div(className="flex items-center mr-6", children=[
+                html.Label('Costo de Procesamiento:', className="text-sm font-medium text-gray-700 mr-2"),
+                dcc.Input(
+                    id='processing_cost',
+                    type='number',
+                    value=5,
+                    className="text-sm text-center w-24 border border-black"
+                ),
+            ]),
+            html.Button('Calcular Bloque', id='calculate_button', n_clicks=0,
+                        className="bg-yellow-500 text-white px-4 py-2 rounded mx-2"),
+            html.Div(id='output', className="mt-4"),
+        ]),
+    ]),
+
+    html.Div(className="bg-gray-200 p-4 mb-4 rounded", children=[
+        html.H2("Visualizador 2D", className="text-xl font-bold mb-4"),
+        html.Div(className="flex flex-wrap justify-start", children=[
             html.Div(className="flex items-center mr-6", children=[
                 html.Label('Eje:', className="text-sm font-medium text-gray-700 mr-2"),
                 dcc.Dropdown(
@@ -103,8 +90,7 @@ app.layout = html.Div([
                     className="text-sm w-24"
                 ),
             ]),
-            
-            html.Div(className="flex items-center", children=[
+            html.Div(className="flex items-center mr-6", children=[
                 html.Label('Valor del Eje:', className="text-sm font-medium text-gray-700 mr-2"),
                 dcc.Input(
                     id='axis-value-input',
@@ -115,27 +101,48 @@ app.layout = html.Div([
                     step=1,
                     className="text-sm text-center w-24 border border-black"
                 )
-            ])
-        ])
-    ], className="mt-4 flex flex-col items-center"),
-    
-    # Sección para los gráficos
-    html.Div(className="mt-8 flex flex-col items-center", children=[
-        # Contenedor para la visualización 2D y la curva Ley
-        html.Div(className="flex flex-row justify-center mb-4", children=[
+            ]),
+            html.Button('Visualizar en 2D', id='visualize-2d-button', n_clicks=0,
+                        className="bg-red-500 text-white px-4 py-2 rounded mx-2"),
+        ]),
+    ]),
+
+    html.Div(className="bg-gray-200 p-4 mb-4 rounded", children=[
+        html.H2("Visualizar 3D con UPL", className="text-xl font-bold mb-4"),
+        html.Div(className="flex flex-wrap justify-start", children=[
+            html.Label("Seleccione el Período:", className="inline-block mr-2"),
+            dcc.Input(
+                id='period-input',
+                type='number',
+                value=0,
+                min=0,
+                max=5,
+                step=1,
+                className="text-sm text-center inline-block border border-black w-24"
+            ),
+            html.Button('Calcular y Visualizar UPL', id='upl-button', n_clicks=0,
+                        className="bg-green-500 text-white px-4 py-2 rounded mx-2"),
+            html.Button('Visualizar Escenario 3D', id='visualize-button', n_clicks=0,
+                        className="bg-blue-500 text-white px-4 py-2 rounded mx-2"),
+        ]),
+    ]),
+
+    html.Div(id="3d-visualization"),
+    html.Div(id='upl-value', className="mt-4 text-red-500 text-2xl"),
+    html.Div(className="mt-8 flex flex-col items-start", children=[
+        html.Div(className="flex flex-row justify-start mb-4", children=[
             html.Div(className="mx-2", children=[
-                html.Img(id='2d-visualization', className="mt-4  object-cover"),  
+                html.Img(id='2d-visualization', className="mt-4  object-cover"),
             ]),
             html.Div(className="mx-2", children=[
                 html.Img(id='tonnage-grade-curve', className="mt-4 object-cover"),
             ]),
         ]),
-
-        # Contenedor para el histograma
         html.Div(className="mt-4", children=[
-            html.Img(id='histogram', className="mx-auto object-cover"), 
+            html.Img(id='histogram', className="mx-auto object-cover"),
         ]),
-    ])
+    ]),
+    html.Div(id='hidden-div', style={'display': 'none'}),
 ], className="w-full h-full")
 
 
