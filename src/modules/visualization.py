@@ -89,8 +89,6 @@ def map_type_to_color(type_of_block):
     color_map = {
         'A': 'yellow',  # Puedes usar nombres de colores
         'B': 'black',
-        'C': 'green',  # Si tienes otros tipos de bloques, añádelos aquí
-        'D': 'red'
     }
     return color_map.get(type_of_block, 'black')  # Color predeterminado si no se encuentra el tipo
 
@@ -253,7 +251,7 @@ def visualize_upl(data):
 
     return plotter
 
-def visualize_2d(data, axis, axis_value, mine_plan, period):
+def visualize_2d(data, axis, axis_value, mine_plan, period, filterType='Ley'):
     if period == 'Ver yacimiento sin periodo':
         period = -1
 
@@ -275,14 +273,15 @@ def visualize_2d(data, axis, axis_value, mine_plan, period):
     else:
         raise ValueError("Eje no válido. Debe ser 'X', 'Y' o 'Z'.")
 
-    filterType = 'Color'  # Cambiado a la columna de colores
-
+    if filterType == 'TypeOfBlock':
+        filterType = 'Color'
     # Crear la visualización en 2D
     fig, ax = plt.subplots(figsize=(6, 6))
-    scatter = ax.scatter(x_vals, y_vals, c=filtered_data[filterType], marker='s', s=500)
+    scatter = ax.scatter(x_vals, y_vals, c=filtered_data[filterType], marker='s', s=500, cmap='cividis')
     ax.set_xlabel('Y' if axis == 'X' else 'X')
     ax.set_ylabel('Z' if axis in ['X', 'Y'] else 'Y')
     ax.set_title(f'Visualización 2D en el plano {axis} = {axis_value}')
+    fig.colorbar(scatter, ax=ax, label=filterType)
 
     ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
     ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))

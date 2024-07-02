@@ -101,6 +101,20 @@ app.layout = html.Div([
                     className="text-sm text-center w-24 border border-black"
                 )
             ]),
+            html.Div(className="flex items-center mr-6", children=[
+                html.Label('Filtro:', className="inline-block ml-4 mr-2"),
+                dcc.Dropdown(
+                    id='filter-type-2d',
+                    options=[
+                        {'label': 'Ley del mineral 1', 'value': 'Ley'},
+                        {'label': 'Ley del mineral 2', 'value': 'Ley2'},
+                        {'label': 'Tipo de bloque', 'value': 'TypeOfBlock'},
+                        {'label': 'Valor', 'value': 'Valor'}
+                    ],
+                    value='Ley',
+                    className="text-sm text-center border border-black w-48"
+                ),
+            ]),
             html.Button('Visualizar en 2D', id='visualize-2d-button', n_clicks=0,
                         className="bg-red-500 text-white px-4 py-2 rounded mx-2 hover:bg-red-700"),
         ]),
@@ -130,8 +144,8 @@ app.layout = html.Div([
                 options=[
                     {'label': 'Tipo de Bloque', 'value': 'TypeOfBlock'},
                     {'label': 'Valor', 'value': 'Valor'},
-                    {'label': 'Ley', 'value': 'Ley'},
-                    {'label': 'Ley2', 'value': 'Ley2'}
+                    {'label': 'Ley del mineral 1', 'value': 'Ley'},
+                    {'label': 'Ley del mineral 2', 'value': 'Ley2'}
                 ],
                 value='TypeOfBlock',  # Valor inicial
                 className="text-sm text-center border border-black w-48"
@@ -198,10 +212,11 @@ def display_scenario(*args):
      State('metal_recovery', 'value'),
      State('mining_cost', 'value'),
      State('processing_cost', 'value'),
-     State('filter-dropdown', 'value')]  # Added filter-dropdown here
+     State('filter-dropdown', 'value'),
+     State('filter-type-2d', 'value')]  # Added filter-type-2d here
 )
 def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenario_file, axis, axis_value,
-                         metal_price, metal_recovery, mining_cost, processing_cost, filter_type):
+                         metal_price, metal_recovery, mining_cost, processing_cost, filter_type, filter_type_2d):
     ctx = dash.callback_context
     if not ctx.triggered:
         return {}, '', '', '', ''
@@ -241,7 +256,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenari
             plt.close(curve_fig)
             
             # Generate 2D visualization
-            fig_2d = visualize_2d(scenario_data, axis, axis_value, mine_plan, period)
+            fig_2d = visualize_2d(scenario_data, axis, axis_value, mine_plan, period, filterType=filter_type_2d)
             buf = io.BytesIO()
             fig_2d.savefig(buf, format='png')
             buf.seek(0)
