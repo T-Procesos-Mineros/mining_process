@@ -262,6 +262,9 @@ def visualize_upl(data):
     return plotter
 
 def visualize_2d(data, axis, axis_value, mine_plan, period):
+    if period == 'Ver yacimiento sin periodo':
+        period = -1
+
     mine_plan['ZIndex'] = -mine_plan['ZIndex']  # Hacer que el valor de Z sea negativo en el plan minero
     filtered_mine_plan = mine_plan[mine_plan['Period'] <= period]
 
