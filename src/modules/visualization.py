@@ -251,6 +251,8 @@ def visualize_upl(data):
 
     return plotter
 
+import matplotlib.colors as mcolors
+
 def visualize_2d(data, axis, axis_value, mine_plan, period, filterType='Ley'):
     if period == 'Ver yacimiento sin periodo':
         period = -1
@@ -275,18 +277,46 @@ def visualize_2d(data, axis, axis_value, mine_plan, period, filterType='Ley'):
 
     if filterType == 'TypeOfBlock':
         filterType = 'Color'
+    
     # Crear la visualización en 2D
     fig, ax = plt.subplots(figsize=(6, 6))
-    scatter = ax.scatter(x_vals, y_vals, c=filtered_data[filterType], marker='s', s=500, cmap='cividis')
+
+    if filterType == 'Color':
+        scatter = ax.scatter(x_vals, y_vals, c=filtered_data[filterType], marker='s', s=500)
+        
+        # Crear una barra de color personalizada
+        color_map = {
+            'yellow': 'A',
+            'black': 'B',
+        }
+        
+        colors = list(color_map.keys())
+        labels = list(color_map.values())
+        
+        # Crear un mapa de colores personalizado
+        cmap = mcolors.ListedColormap(colors)
+        norm = mcolors.BoundaryNorm(range(len(colors) + 1), cmap.N)
+        
+        # Crear la barra de colores con las etiquetas personalizadas
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])
+        cbar = fig.colorbar(sm, ticks=[i + 0.5 for i in range(len(colors))], ax=ax)
+        cbar.set_ticklabels(labels)
+        cbar.set_label('Tipo de bloque')
+        
+    else:
+        scatter = ax.scatter(x_vals, y_vals, c=filtered_data[filterType], marker='s', s=500, cmap='cividis')
+        fig.colorbar(scatter, ax=ax, label=filterType)
+
     ax.set_xlabel('Y' if axis == 'X' else 'X')
     ax.set_ylabel('Z' if axis in ['X', 'Y'] else 'Y')
     ax.set_title(f'Visualización 2D en el plano {axis} = {axis_value}')
-    fig.colorbar(scatter, ax=ax, label=filterType)
 
     ax.xaxis.set_major_locator(plt.MaxNLocator(integer=True))
     ax.yaxis.set_major_locator(plt.MaxNLocator(integer=True))
 
     return fig
+
 
 def load_and_visualize_scenario(scenario_file, period_limit=None, metal_price=None, metal_recovery=None, mining_cost=None, processing_cost=None, filterType='Valor'):
     # Establecer valores predeterminados si no se proporcionan
