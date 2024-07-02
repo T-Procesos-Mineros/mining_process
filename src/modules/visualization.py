@@ -139,7 +139,7 @@ def find_neighbors(data, x, y, z):
             neighbors.append(neighbor.index[0])
     return neighbors
 
-def visualize_scenario(data, mine_plan, period_limit=None):
+def visualize_scenario(data, mine_plan, period_limit=None,):
     # Convertir columnas a tipo float
     x = data['X'].astype(float)
     y = data['Y'].astype(float)

@@ -113,15 +113,16 @@ app.layout = html.Div([
             dcc.Dropdown(
                             id='period-input',
                             options=[
+                                {'label': 'Ver yacimiento', 'value': 'Ver yacimiento sin periodo'},
                                 {'label': 'Periodo 0', 'value': 0},
                                 {'label': 'Periodo 1', 'value': 1},
                                 {'label': 'Periodo 2', 'value': 2},
                                 {'label': 'Periodo 3', 'value': 3},
                                 {'label': 'Periodo 4', 'value': 4},
                                 {'label': 'Periodo 5', 'value': 5},
-                                {'label': 'Ver yacimiento', 'value': 'Ver yacimiento sin periodo'}
+                                
                             ],
-                            value='Periodo 0',  # Valor inicial
+                            value='Ver yacimiento sin periodo',  # Valor inicial
                             className="text-sm text-center border border-black w-48"
                         ),
             html.Button('Calcular y Visualizar UPL', id='upl-button', n_clicks=0,
