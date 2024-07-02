@@ -110,15 +110,20 @@ app.layout = html.Div([
         html.H2("Visualizar 3D con UPL", className="text-xl font-bold mb-4"),
         html.Div(className="flex flex-wrap justify-start", children=[
             html.Label("Seleccione el Período:", className="inline-block mr-2"),
-            dcc.Input(
-                id='period-input',
-                type='number',
-                value=0,
-                min=0,
-                max=5,
-                step=1,
-                className="text-sm text-center inline-block border border-black w-24"
-            ),
+            dcc.Dropdown(
+                            id='period-input',
+                            options=[
+                                {'label': 'Ver yacimiento', 'value': 'Ver yacimiento sin periodo'},
+                                {'label': 'Periodo 0', 'value': 0},
+                                {'label': 'Periodo 1', 'value': 1},
+                                {'label': 'Periodo 2', 'value': 2},
+                                {'label': 'Periodo 2', 'value': 3},
+                                {'label': 'Periodo 2', 'value': 4},
+                                {'label': 'Periodo 2', 'value': 5}
+                            ],
+                            value='Ver yacimiento sin periodo',  # Valor inicial
+                            className="text-sm text-center border border-black w-48"
+                        ),
             html.Button('Calcular y Visualizar UPL', id='upl-button', n_clicks=0,
                         className="bg-green-500 text-white px-4 py-2 rounded mx-2"),
             html.Button('Visualizar Escenario 3D', id='visualize-button', n_clicks=0,
@@ -189,10 +194,12 @@ def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenari
         return {}, '', '', '', ''
 
     button_id = ctx.triggered[0]['prop_id'].split('.')[0]
+    period_limit = None if period == 'Ver yacimiento sin periodo' else int(period)
     if button_id == 'visualize-button' and n_clicks_3d > 0:
-        if scenario_file:
-            load_and_visualize_scenario(scenario_file, period, metal_price, metal_recovery, mining_cost, processing_cost)
-        return {}, '', '', '', ''
+            if scenario_file:
+                period_limit = None if period == 'Ver yacimiento sin periodo' else period
+                load_and_visualize_scenario(scenario_file, period_limit, metal_price, metal_recovery, mining_cost, processing_cost)
+            return {}, '', '', '', ''
 
     elif button_id == 'visualize-2d-button' and n_clicks_2d > 0:
         if scenario_file:

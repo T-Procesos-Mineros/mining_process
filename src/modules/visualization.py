@@ -81,7 +81,8 @@ def find_neighbors(data, x, y, z):
             neighbors.append(neighbor.index[0])
     return neighbors
 
-def visualize_scenario(data, mine_plan, period_limit):
+def visualize_scenario(data, mine_plan, period_limit=None):
+    # Convertir columnas a tipo float
     x = data['X'].astype(float)
     y = data['Y'].astype(float)
     z = data['Z'].astype(float)
@@ -98,6 +99,7 @@ def visualize_scenario(data, mine_plan, period_limit):
     ley2 = data['Ley2'].astype(float)
     valor = data['Valor'].astype(float)
 
+    # Crear puntos de PyVista
     points = pv.PolyData(np.column_stack((x, y, z)).astype(np.float32))
     points['Tonelaje'] = tonelaje
     points['Metal 1'] = metal_1
@@ -109,21 +111,34 @@ def visualize_scenario(data, mine_plan, period_limit):
     points['Y'] = y
     points['Z'] = z
 
+    # Crear cubo para visualización
     cube = pv.Cube()
     glyphs = points.glyph(scale=False, geom=cube, orient=False)
-    mine_plan['ZIndex'] = -mine_plan['ZIndex']
-    filtered_mine_plan = mine_plan[mine_plan['Period'] <= period_limit]
-    mask = np.ones(len(points.points), dtype=bool)
 
-    for index, row in filtered_mine_plan.iterrows():
-        x_index = row['XIndex']
-        y_index = row['YIndex']
-        z_index = row['ZIndex']
-        mask &= ~((points['X'] == x_index) & (points['Y'] == y_index) & (points['Z'] == z_index))
+    # Filtrar puntos si period_limit es proporcionado
+    if period_limit is not None and period_limit != 'Ver yacimiento sin periodo':
+        try:
+            period_limit = int(period_limit)  # Asegurarse de que period_limit es un entero
+            mine_plan['ZIndex'] = -mine_plan['ZIndex']
+            filtered_mine_plan = mine_plan[mine_plan['Period'] <= period_limit]
+            mask = np.ones(len(points.points), dtype=bool)
 
-    filtered_points = points.extract_points(mask)
-    glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
+            for index, row in filtered_mine_plan.iterrows():
+                x_index = row['XIndex']
+                y_index = row['YIndex']
+                z_index = row['ZIndex']
+                mask &= ~((points['X'] == x_index) & (points['Y'] == y_index) & (points['Z'] == z_index))
 
+            filtered_points = points.extract_points(mask)
+            glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
+        except ValueError:
+            # Manejar el caso en que period_limit no pueda convertirse a entero
+            print(f"Error: period_limit no es un valor válido: {period_limit}")
+    else:
+        # Si period_limit es None o 'Ver yacimiento sin periodo', se muestran todos los puntos
+        glyphs = points.glyph(scale=False, geom=cube, orient=False)
+
+    # Configurar visualización con PyVista
     plotter = pv.Plotter()
     filterType = 'Ley'
     plotter.add_mesh(glyphs, scalars=filterType, cmap='cividis')
@@ -229,9 +244,21 @@ def load_and_visualize_scenario(scenario_file, period_limit=None, metal_price=No
         mining_cost = 0
     if processing_cost is None:
         processing_cost = 0
+    if period_limit == 'Ver yacimiento sin periodo' or period_limit is None:
+        period_limit = None  # Asegurarse de que sea None si se selecciona 'Ver yacimiento sin periodo'
+
+    # Cargar los datos del escenario
     scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
+    # Cargar el plan minero
     mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
-    visualize_scenario(scenario_data, mine_plan, period_limit)
+
+    # Si period_limit es None o tiene el valor especial 'Ver yacimiento sin periodo', visualiza sin aplicar filtro de periodo
+    if period_limit is None or period_limit == 'Ver yacimiento sin periodo':
+        visualize_scenario(scenario_data, mine_plan)  # Llamar a visualize_scenario sin period_limit
+    else:
+        visualize_scenario(scenario_data, mine_plan, period_limit)  # Pasar period_limit cuando esté presente
+
+    # Imprimir el valor total del escenario
     print_total_value(scenario_data)
 
 def print_total_value(scenario_data):
