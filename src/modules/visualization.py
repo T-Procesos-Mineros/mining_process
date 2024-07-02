@@ -139,7 +139,7 @@ def find_neighbors(data, x, y, z):
             neighbors.append(neighbor.index[0])
     return neighbors
 
-def visualize_scenario(data, mine_plan, period_limit=None,):
+def visualize_scenario(data, mine_plan, period_limit=None, filterType='Valor'):
     # Convertir columnas a tipo float
     x = data['X'].astype(float)
     y = data['Y'].astype(float)
@@ -147,18 +147,16 @@ def visualize_scenario(data, mine_plan, period_limit=None,):
     tonelaje = data['Tonelaje total del bloque'].astype(float)
     metal_1 = data['metal 1'].astype(float)
     
-    # Verificar si la columna 'metal_2' existe
     if 'metal_2' in data.columns:
         metal_2 = data['metal_2'].astype(float)
     else:
-        metal_2 = np.zeros(len(data))  # Si no existe, usar una columna de ceros
+        metal_2 = np.zeros(len(data))
     
     ley = data['Ley'].astype(float)
     ley2 = data['Ley2'].astype(float)
     valor = data['Valor'].astype(float)
     TypeOfBlock = data['TypeOfBlock'].astype(str)
 
-    # Crear puntos de PyVista
     points = pv.PolyData(np.column_stack((x, y, z)).astype(np.float32))
     points['Tonelaje'] = tonelaje
     points['Metal 1'] = metal_1
@@ -171,14 +169,12 @@ def visualize_scenario(data, mine_plan, period_limit=None,):
     points['Z'] = z
     points['TypeOfBlock'] = TypeOfBlock
 
-    # Crear cubo para visualización
     cube = pv.Cube()
     glyphs = points.glyph(scale=False, geom=cube, orient=False)
 
-    # Filtrar puntos si period_limit es proporcionado
     if period_limit is not None and period_limit != 'Ver yacimiento sin periodo':
         try:
-            period_limit = int(period_limit)  # Asegurarse de que period_limit es un entero
+            period_limit = int(period_limit)
             mine_plan['ZIndex'] = -mine_plan['ZIndex']
             filtered_mine_plan = mine_plan[mine_plan['Period'] <= period_limit]
             mask = np.ones(len(points.points), dtype=bool)
@@ -192,22 +188,17 @@ def visualize_scenario(data, mine_plan, period_limit=None,):
             filtered_points = points.extract_points(mask)
             glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
         except ValueError:
-            # Manejar el caso en que period_limit no pueda convertirse a entero
             print(f"Error: period_limit no es un valor válido: {period_limit}")
     else:
-        # Si period_limit es None o 'Ver yacimiento sin periodo', se muestran todos los puntos
         glyphs = points.glyph(scale=False, geom=cube, orient=False)
 
-    # Configurar visualización con PyVista
     plotter = pv.Plotter()
-    filterType = 'TypeOfBlock'
     plotter.add_mesh(glyphs, scalars=filterType, cmap='cividis')
     surface = glyphs.extract_surface()
     edges = surface.extract_feature_edges()
     plotter.add_mesh(edges, color="black", line_width=3)
     plotter.enable_eye_dome_lighting()
     plotter.show_grid()
-    plotter.show(auto_close=False)
 
     return plotter
 
@@ -297,7 +288,8 @@ def visualize_2d(data, axis, axis_value, mine_plan, period):
 
     return fig
 
-def load_and_visualize_scenario(scenario_file, period_limit=None, metal_price=None, metal_recovery=None, mining_cost=None, processing_cost=None):
+def load_and_visualize_scenario(scenario_file, period_limit=None, metal_price=None, metal_recovery=None, mining_cost=None, processing_cost=None, filterType='Valor'):
+    # Establecer valores predeterminados si no se proporcionan
     if metal_price is None:
         metal_price = 0
     if metal_recovery is None:
@@ -314,15 +306,18 @@ def load_and_visualize_scenario(scenario_file, period_limit=None, metal_price=No
     # Cargar el plan minero
     mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
 
-    # Si period_limit es None o tiene el valor especial 'Ver yacimiento sin periodo', visualiza sin aplicar filtro de periodo
+    # Llamar a visualize_scenario y capturar el objeto Plotter
+    plotter = None
     if period_limit is None or period_limit == 'Ver yacimiento sin periodo':
-        visualize_scenario(scenario_data, mine_plan)  # Llamar a visualize_scenario sin period_limit
+        plotter = visualize_scenario(scenario_data, mine_plan, filterType=filterType)  # Llamar con filterType
     else:
-        visualize_scenario(scenario_data, mine_plan, period_limit)  # Pasar period_limit cuando esté presente
+        plotter = visualize_scenario(scenario_data, mine_plan, period_limit=period_limit, filterType=filterType)  # Pasar period_limit y filterType
 
     # Imprimir el valor total del escenario
     print_total_value(scenario_data)
     print(scenario_data.head())
+
+    return plotter
 
 def print_total_value(scenario_data):
     total_value = scenario_data['Valor'].sum()
