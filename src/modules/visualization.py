@@ -10,6 +10,7 @@ import io
 import base64
 from collections import defaultdict
 import itertools
+import locale
 
 
 metal_price = 600000
@@ -331,12 +332,20 @@ def print_total_value(scenario_data):
 def load_and_visualize_upl(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost):
     scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
     upl_data = compute_upl(scenario_data)
+    
     if upl_data.empty or upl_data['Valor'].sum() == 0:
         print("No se puede visualizar el UPL, ya que no es rentable extraer el mineral del yacimiento.")
         return 0, "No se puede visualizar el UPL, ya que no es rentable extraer el mineral del yacimiento."
+    
     visualize_upl(upl_data)
+    
     upl_value = upl_data['Valor'].sum()
-    return round(upl_value, 3), f'Ultimate Pit Limit Value (UPL): ${round(upl_value, 3)} USD'
+    
+    # Formatear el valor de upl_value a dólares
+    locale.setlocale(locale.LC_ALL, 'en_US.UTF-8')
+    formatted_upl_value = locale.currency(upl_value, grouping=True)
+    
+    return round(upl_value, 3), f'Ultimate Pit Limit Value (UPL): {formatted_upl_value}'
 
 def generate_histogram(scenario_data):
     metal_1_data = scenario_data['Ley']
