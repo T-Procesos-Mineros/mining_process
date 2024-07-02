@@ -1,6 +1,6 @@
 import matplotlib
 matplotlib.use('Agg')  # Usar el backend 'Agg' para evitar problemas de GUI
-
+import re
 import pandas as pd
 import pyvista as pv
 import numpy as np
@@ -17,15 +17,50 @@ metal_recovery = 0.85
 mining_cost = 2.5
 processing_cost = 5
 
-def load_scenario(file_path,metal_price=None, metal_recovery=None, mining_cost=None, processing_cost=None):
+def parse_rules(file_path):
+    rules = []
+    with open(file_path, 'r') as file:
+        lines = file.readlines()
+        for line in lines:
+            match = re.match(r'if \(ZIndex == (\d+) and \(\((.*?)\)\)\) TypeOfBlock = "(.*?)";', line)
+            if match:
+                z_index = int(match.group(1))
+                conditions = match.group(2).split('or')
+                x_ranges = []
+                for condition in conditions:
+                    condition = condition.replace(')', '').strip()
+                    if '<=' in condition and '>=' in condition:
+                        parts = condition.split('and')
+                        x_range = [int(parts[0].split('>=')[1].strip()), int(parts[1].split('<=')[1].strip())]
+                    elif '<=' in condition:
+                        x_range = [int(condition.split('<=')[1].strip())]
+                    elif '>=' in condition:
+                        x_range = [int(condition.split('>=')[1].strip()), float('inf')]
+                    elif '==' in condition:
+                        x_range = [int(condition.split('==')[1].strip())]
+                    elif '>' in condition:
+                        x_range = [int(condition.split('>')[1].strip()) + 1, float('inf')]
+                    elif '<' in condition:
+                        x_range = [0, int(condition.split('<')[1].strip()) - 1]
+                    x_ranges.append(x_range)
+                rock_type = match.group(3)
+                rules.append({'ZIndex': z_index, 'XRanges': x_ranges, 'TypeOfBlock': rock_type})
+    return rules
+
+def load_scenario(file_path, metal_price=None, metal_recovery=None, mining_cost=None, processing_cost=None):
     if metal_price is None:
-        metal_price = 18000000
+        metal_price = 18000000  # Valor predeterminado
     if metal_recovery is None:
-        metal_recovery = 0.85
+        metal_recovery = 0.85  # Valor predeterminado
     if mining_cost is None:
-        mining_cost = 2.5
+        mining_cost = 2.5  # Valor predeterminado
     if processing_cost is None:
-        processing_cost = 5
+        processing_cost = 5  # Valor predeterminado
+
+    # Leer el archivo de reglas
+    rules_path = 'src/data/RockTypes/RockTypes.txt'
+    rules = parse_rules(rules_path)
+
     columns = ['X', 'Y', 'Z', 'Tonelaje total del bloque', 'metal 1', 'metal 2']
     data = pd.read_csv(file_path, header=None, names=columns)
     data['Z'] = -data['Z']
@@ -33,7 +68,21 @@ def load_scenario(file_path,metal_price=None, metal_recovery=None, mining_cost=N
     data['Ley2'] = data['metal 2'] / data['Tonelaje total del bloque']
     data['Valor'] = data.apply(lambda row: calculate_block_value(
         row['Ley'], row['Tonelaje total del bloque'], metal_price, metal_recovery, mining_cost, processing_cost), axis=1)
+
+    # Asignar el tipo de roca
+    def assign_rock_type(row, rules):
+        for rule in rules:
+            if row['Z'] == -rule['ZIndex']:  # Invertimos Z de nuevo para la comparación
+                for x_range in rule['XRanges']:
+                    if len(x_range) == 1 and row['X'] == x_range[0]:
+                        return rule['TypeOfBlock']
+                    elif len(x_range) == 2 and x_range[0] <= row['X'] <= x_range[1]:
+                        return rule['TypeOfBlock']
+        return 'A'
+
+    data['TypeOfBlock'] = data.apply(lambda row: assign_rock_type(row, rules), axis=1)
     return data
+
 
 def calculate_block_value(ley, tonelaje, metal_price, metal_recovery, mining_cost, processing_cost):
     formula_1 = ley * metal_price * metal_recovery - (mining_cost + processing_cost) * tonelaje
@@ -97,6 +146,7 @@ def visualize_scenario(data, mine_plan, period_limit):
     ley = data['Ley'].astype(float)
     ley2 = data['Ley2'].astype(float)
     valor = data['Valor'].astype(float)
+    TypeOfBlock = data['TypeOfBlock'].astype(str)
 
     points = pv.PolyData(np.column_stack((x, y, z)).astype(np.float32))
     points['Tonelaje'] = tonelaje
@@ -108,6 +158,7 @@ def visualize_scenario(data, mine_plan, period_limit):
     points['X'] = x
     points['Y'] = y
     points['Z'] = z
+    points['TypeOfBlock'] = TypeOfBlock
 
     cube = pv.Cube()
     glyphs = points.glyph(scale=False, geom=cube, orient=False)
@@ -125,7 +176,7 @@ def visualize_scenario(data, mine_plan, period_limit):
     glyphs = filtered_points.glyph(scale=False, geom=cube, orient=False)
 
     plotter = pv.Plotter()
-    filterType = 'Ley'
+    filterType = 'TypeOfBlock'
     plotter.add_mesh(glyphs, scalars=filterType, cmap='cividis')
     surface = glyphs.extract_surface()
     edges = surface.extract_feature_edges()
@@ -233,6 +284,7 @@ def load_and_visualize_scenario(scenario_file, period_limit=None, metal_price=No
     mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
     visualize_scenario(scenario_data, mine_plan, period_limit)
     print_total_value(scenario_data)
+    print(scenario_data.head())
 
 def print_total_value(scenario_data):
     total_value = scenario_data['Valor'].sum()
