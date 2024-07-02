@@ -226,7 +226,7 @@ def update_visualization(n_clicks_3d, n_clicks_2d, n_clicks_upl, period, scenari
 
     elif button_id == 'upl-button' and n_clicks_upl > 0:
         if scenario_file:
-            upl_value, upl_message = load_and_visualize_scenario(scenario_file, period, metal_price, metal_recovery, mining_cost, processing_cost)
+            upl_value, upl_message = load_and_visualize_upl(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
             return {}, upl_message, '', '', ''
 
     return {}, '', '', '', ''

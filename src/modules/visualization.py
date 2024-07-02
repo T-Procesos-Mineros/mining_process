@@ -172,7 +172,6 @@ def visualize_upl(data):
     glyphs = points.glyph(scale=False, geom=cube, orient=False)
 
     plotter = pv.Plotter()
-    plotter.add_mesh(glyphs, scalars='Ley', cmap='cividis')
     surface = glyphs.extract_surface()
     edges = surface.extract_feature_edges()
     plotter.add_mesh(edges, color="black", line_width=3)
@@ -233,15 +232,14 @@ def load_and_visualize_scenario(scenario_file, period_limit=None, metal_price=No
     scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
     mine_plan = pd.read_csv('src/data/MinePlan/MinePlan.txt')
     visualize_scenario(scenario_data, mine_plan, period_limit)
-    print_total_value(scenario_file)
+    print_total_value(scenario_data)
 
-def print_total_value(scenario_file):
-    scenario_data = load_scenario(scenario_file)
+def print_total_value(scenario_data):
     total_value = scenario_data['Valor'].sum()
     print(f"Valor total del yacimiento: ${total_value:.2f} USD")
 
-def load_and_visualize_upl(scenario_file):
-    scenario_data = load_scenario(scenario_file)
+def load_and_visualize_upl(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost):
+    scenario_data = load_scenario(scenario_file, metal_price, metal_recovery, mining_cost, processing_cost)
     upl_data = compute_upl(scenario_data)
     if upl_data.empty or upl_data['Valor'].sum() == 0:
         print("No se puede visualizar el UPL, ya que no es rentable extraer el mineral del yacimiento.")
