@@ -1,6 +1,7 @@
 # Mining Processes ICT Workshop
 
-PreRequisitos
+## Prerequisites
+
 - [Python 3.11 or higher](https://www.python.org/downloads/)
 
 ## Installation Guide
