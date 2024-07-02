@@ -68,7 +68,7 @@ app.layout = html.Div([
                 ),
             ]),
             html.Button('Calcular Bloque', id='calculate_button', n_clicks=0,
-                        className="bg-yellow-500 text-white px-4 py-2 rounded mx-2"),
+                        className="bg-yellow-500 text-white px-4 py-2 rounded mx-2 hover:bg-yellow-700"),
             html.Div(id='output', className="mt-4 px-3"),
         ]),
     ]),
@@ -102,7 +102,7 @@ app.layout = html.Div([
                 )
             ]),
             html.Button('Visualizar en 2D', id='visualize-2d-button', n_clicks=0,
-                        className="bg-red-500 text-white px-4 py-2 rounded mx-2"),
+                        className="bg-red-500 text-white px-4 py-2 rounded mx-2 hover:bg-red-700"),
         ]),
     ]),
 
@@ -117,17 +117,17 @@ app.layout = html.Div([
                                 {'label': 'Periodo 0', 'value': 0},
                                 {'label': 'Periodo 1', 'value': 1},
                                 {'label': 'Periodo 2', 'value': 2},
-                                {'label': 'Periodo 2', 'value': 3},
-                                {'label': 'Periodo 2', 'value': 4},
-                                {'label': 'Periodo 2', 'value': 5}
+                                {'label': 'Periodo 3', 'value': 3},
+                                {'label': 'Periodo 4', 'value': 4},
+                                {'label': 'Periodo 5', 'value': 5}
                             ],
                             value='Ver yacimiento sin periodo',  # Valor inicial
                             className="text-sm text-center border border-black w-48"
                         ),
             html.Button('Calcular y Visualizar UPL', id='upl-button', n_clicks=0,
-                        className="bg-green-500 text-white px-4 py-2 rounded mx-2"),
+                        className="bg-green-500 text-white px-4 py-2 rounded mx-2 hover:bg-green-700"),
             html.Button('Visualizar Escenario 3D', id='visualize-button', n_clicks=0,
-                        className="bg-blue-500 text-white px-4 py-2 rounded mx-2"),
+                        className="bg-blue-500 text-white px-4 py-2 rounded mx-2 hover:bg-blue-700"),
         ]),
     ]),
 
