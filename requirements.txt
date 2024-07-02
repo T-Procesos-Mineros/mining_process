@@ -6,3 +6,7 @@ networkx
 dash
 flask
 dash_vtk
+itertools
+collections
+re
+io
